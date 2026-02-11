@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DuckApplication<Duck>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "vn.Project.Duck.DuckApplication",
+            "projectName": "Duck",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
