@@ -5,6 +5,13 @@
       "name": "JobhunterApplication",
       "request": "launch",
       "mainClass": "vn.job.hunter.JobhunterApplication",
+      "projectName": "jobhunter-Backend"
+    },
+    {
+      "type": "java",
+      "name": "JobhunterApplication",
+      "request": "launch",
+      "mainClass": "vn.job.hunter.JobhunterApplication",
       "projectName": "jobhunter-Backend-Y"
     },
     {
