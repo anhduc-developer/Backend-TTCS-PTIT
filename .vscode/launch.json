@@ -2,6 +2,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "JobhunterApplication",
+      "request": "launch",
+      "mainClass": "vn.job.hunter.JobhunterApplication",
+      "projectName": "jobhunter-Backend-Y"
+    },
+    {
+      "type": "java",
+      "name": "TtcsPtitApplication",
+      "request": "launch",
+      "mainClass": "vn.Backend.TTCS_PTIT.TtcsPtitApplication",
+      "projectName": ""
+    },
+    {
+      "type": "java",
       "name": "DuckApplication",
       "request": "launch",
       "mainClass": "com.example.duck.DuckApplication",
