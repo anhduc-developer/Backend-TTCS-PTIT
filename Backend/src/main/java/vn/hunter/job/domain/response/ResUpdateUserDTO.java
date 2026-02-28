@@ -1,4 +1,4 @@
-package vn.hunter.job.domain.dto;
+package vn.hunter.job.domain.response;
 
 import java.time.Instant;
 

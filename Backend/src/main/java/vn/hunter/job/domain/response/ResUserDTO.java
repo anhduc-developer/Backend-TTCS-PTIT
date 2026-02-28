@@ -1,18 +1,33 @@
-package vn.hunter.job.domain.dto;
+package vn.hunter.job.domain.response;
 
 import java.time.Instant;
 
 import vn.hunter.job.util.constant.GenderEnum;
 
-public class ResCreateUserDTO {
+public class ResUserDTO {
     private Long id;
     private String email;
     private String name;
-    private int age;
-
     private GenderEnum gender;
     private String address;
+    private int age;
+    private Instant updatedAt;
     private Instant createdAt;
+
+    public ResUserDTO(Long id, String email, String name, GenderEnum gender, String address, int age, Instant updatedAt,
+            Instant createdAt) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+        this.gender = gender;
+        this.address = address;
+        this.age = age;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
+    }
+
+    public ResUserDTO() {
+    }
 
     public Long getId() {
         return id;
@@ -38,14 +53,6 @@ public class ResCreateUserDTO {
         this.name = name;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
     public GenderEnum getGender() {
         return gender;
     }
@@ -60,6 +67,22 @@ public class ResCreateUserDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Instant getCreatedAt() {

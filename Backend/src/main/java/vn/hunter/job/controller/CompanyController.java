@@ -4,7 +4,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
 import vn.hunter.job.domain.Company;
-import vn.hunter.job.domain.dto.ResultPaginationDTO;
+import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.service.CompanyService;
 import vn.hunter.job.util.annotation.ApiMessage;
 

@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
 
-import vn.hunter.job.domain.dto.ResLoginDTO;
+import vn.hunter.job.domain.response.ResLoginDTO;
 
 @Service
 public class SecurityUtil {

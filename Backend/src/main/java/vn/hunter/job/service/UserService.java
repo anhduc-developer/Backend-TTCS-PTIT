@@ -11,11 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hunter.job.domain.User;
-import vn.hunter.job.domain.dto.Meta;
-import vn.hunter.job.domain.dto.ResCreateUserDTO;
-import vn.hunter.job.domain.dto.ResUpdateUserDTO;
-import vn.hunter.job.domain.dto.ResUserDTO;
-import vn.hunter.job.domain.dto.ResultPaginationDTO;
+import vn.hunter.job.domain.response.ResCreateUserDTO;
+import vn.hunter.job.domain.response.ResUpdateUserDTO;
+import vn.hunter.job.domain.response.ResUserDTO;
+import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.repository.UserRepository;
 
 @Service
@@ -33,7 +32,7 @@ public class UserService {
     public ResultPaginationDTO getAllUsers(Specification<User> spect, Pageable pagable) {
         Page<User> pageUser = this.userRepository.findAll(spect, pagable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
-        Meta mt = new Meta();
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
         mt.setPage(pagable.getPageNumber() + 1);
         mt.setPageSize(pagable.getPageSize());
         mt.setPages(pageUser.getTotalPages());

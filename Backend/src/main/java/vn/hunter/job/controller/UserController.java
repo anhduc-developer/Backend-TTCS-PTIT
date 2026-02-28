@@ -1,10 +1,10 @@
 package vn.hunter.job.controller;
 
 import vn.hunter.job.domain.User;
-import vn.hunter.job.domain.dto.ResCreateUserDTO;
-import vn.hunter.job.domain.dto.ResUpdateUserDTO;
-import vn.hunter.job.domain.dto.ResUserDTO;
-import vn.hunter.job.domain.dto.ResultPaginationDTO;
+import vn.hunter.job.domain.response.ResCreateUserDTO;
+import vn.hunter.job.domain.response.ResUpdateUserDTO;
+import vn.hunter.job.domain.response.ResUserDTO;
+import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.service.UserService;
 import vn.hunter.job.util.annotation.ApiMessage;
 import vn.hunter.job.util.errors.IdInvalidException;
