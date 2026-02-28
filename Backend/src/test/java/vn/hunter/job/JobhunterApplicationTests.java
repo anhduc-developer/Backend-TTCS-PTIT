@@ -1,4 +1,4 @@
-package vn.job.hunter;
+package vn.hunter.job;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
