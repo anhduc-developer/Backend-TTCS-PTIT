@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.micrometer.common.lang.NonNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,61 +16,67 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.hunter.job.util.SecurityUtil;
-import vn.hunter.job.util.constant.GenderEnum;
+import vn.hunter.job.util.constant.LevelEnum;
 
 @Entity
-@Table(name = "users")
+@Table(name = "jobs")
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class User {
+public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "Tên job không được để trống")
     private String name;
-    @NotBlank(message = "email không được để trống")
-    private String email;
-    @NotBlank(message = "password không được để trống")
-    private String password;
-    private int age;
+    @NotBlank(message = "Location is not blank")
+    private String location;
+    @NotNull
+    private double salary;
+    @NotNull
+    private int quantity;
+    @NotNull
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
-    private String address;
+    private LevelEnum level;
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String refreshToken;
+    @NotBlank(message = "Miêu tả không được để trống")
+    private String description;
+    private Instant startDate;
+    private Instant endDate;
+    private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Resume> resumes;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "jobs" }) // bo qua tat ca tru jobs
+    @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
+    private List<Skill> skills;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    @JsonIgnore
+    List<Resume> resumes;
 
     @PrePersist
     public void handleBeforeCreate() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         this.createdAt = Instant.now();
-
     }
 
     @PreUpdate

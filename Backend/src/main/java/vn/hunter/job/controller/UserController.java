@@ -62,15 +62,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.convertResCreateUserDTO(newUser));
     }
 
-    @PutMapping("/users/{id}")
-    @ApiMessage("Update a new user")
-    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user, @PathVariable("id") Long id)
-            throws Exception {
-        User currentUser = this.userService.updateUser(user);
-        if (currentUser == null) {
+    @PutMapping("/users")
+    @ApiMessage("Update a user")
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user) throws IdInvalidException {
+        User ericUser = this.userService.updateUser(user);
+        if (ericUser == null) {
             throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");
         }
-        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(currentUser));
+        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(ericUser));
     }
 
     @DeleteMapping("/users/{id}")

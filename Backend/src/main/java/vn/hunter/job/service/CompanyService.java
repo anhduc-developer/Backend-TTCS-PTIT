@@ -1,5 +1,6 @@
 package vn.hunter.job.service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -9,15 +10,19 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hunter.job.domain.Company;
+import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.repository.CompanyRepository;
+import vn.hunter.job.repository.UserRepository;
 
 @Service
 public class CompanyService {
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    public CompanyService(CompanyRepository companyRepository, UserRepository userRepository) {
         this.companyRepository = companyRepository;
+        this.userRepository = userRepository;
     }
 
     public ResultPaginationDTO getAllCompanies(Specification<Company> spect, Pageable pageable) {
@@ -53,8 +58,11 @@ public class CompanyService {
     }
 
     public void deleteCompany(Long id) {
-        if (!companyRepository.existsById(id)) {
-            throw new NoSuchElementException("Company not found");
+        Optional<Company> companyOptional = this.companyRepository.findById(id);
+        if (companyOptional.isPresent()) {
+            Company company = companyOptional.get();
+            List<User> users = this.userRepository.findByCompany(company);
+            this.userRepository.deleteAll(users);
         }
         this.companyRepository.deleteById(id);
     }

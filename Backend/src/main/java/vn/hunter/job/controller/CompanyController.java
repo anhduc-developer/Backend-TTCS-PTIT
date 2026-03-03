@@ -33,18 +33,21 @@ public class CompanyController {
     }
 
     @GetMapping("/companies/{id}")
+    @ApiMessage("Fetch Company By Id")
     public ResponseEntity<Optional<Company>> getCompanyById(@PathVariable("id") Long id) {
         Optional<Company> company = this.companyService.getCompanyById(id);
         return ResponseEntity.ok().body(company);
     }
 
     @PostMapping("/companies")
+    @ApiMessage("Create a Company")
     public ResponseEntity<Company> createNewCompaney(@Valid @RequestBody Company company) {
         Company newCompany = this.companyService.createCompany(company);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCompany);
     }
 
     @PutMapping("/companies/{id}")
+    @ApiMessage("Update a Company")
     public ResponseEntity<Company> updateCompany(@Valid @PathVariable("id") Long id,
             @RequestBody Company updateCompany) {
         Company newCompany = this.companyService.updateCompany(updateCompany, id);
@@ -52,6 +55,7 @@ public class CompanyController {
     }
 
     @DeleteMapping("/companies/{id}")
+    @ApiMessage("Delete a Company")
     public ResponseEntity<String> deleteCompany(@PathVariable("id") Long id) {
         this.companyService.deleteCompany(id);
         return ResponseEntity.ok().body("Success!");
