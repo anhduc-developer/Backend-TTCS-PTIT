@@ -35,7 +35,8 @@ public class PermissionInterceptor implements HandlerInterceptor {
         System.out.println(">>> path= " + path);
         System.out.println(">>> httpMethod= " + httpMethod);
         System.out.println(">>> requestURI= " + requestURI);
-
+        System.out.println(">>> URI = " + request.getRequestURI());
+        System.out.println(">>> query = " + request.getQueryString());
         // check permission
         String email = SecurityUtil.getCurrentUserLogin().isPresent() == true ? SecurityUtil.getCurrentUserLogin().get()
                 : "";

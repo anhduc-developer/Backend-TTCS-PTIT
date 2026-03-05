@@ -1,0 +1,18 @@
+package vn.hunter.job.domain.request;
+
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
+
+@Setter
+@Getter
+public class ReqChangePassword {
+    @NotBlank(message = "Mật khẩu hiện tại không được để trống")
+    private String oldPassword;
+
+    @NotBlank(message = "Mật khẩu mới không được để trống")
+    @Size(min = 6, message = "Mật khẩu mới phải tối thiểu 6 ký tự")
+    private String newPassword;
+
+}

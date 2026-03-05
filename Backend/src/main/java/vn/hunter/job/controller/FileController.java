@@ -62,6 +62,8 @@ public class FileController {
     public ResponseEntity<Resource> download(@RequestParam(name = "fileName", required = false) String fileName,
             @RequestParam(name = "folder", required = false) String folder)
             throws StorageException, URISyntaxException, FileNotFoundException {
+        System.out.println(">>> fileName = " + fileName);
+        System.out.println(">>> folder = " + folder);
         if (fileName == null || folder == null) {
             throw new StorageException("Missing required params : (fileName or folder not found");
         }

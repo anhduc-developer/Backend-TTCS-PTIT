@@ -37,7 +37,7 @@ public class SkillController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newSkill);
     }
 
-    @PutMapping("/skills/{id}")
+    @PutMapping("/skills")
     @ApiMessage("Update a Skill")
     public ResponseEntity<Skill> updateSkill(@Valid @RequestBody Skill newSkill)
             throws IdInvalidException {

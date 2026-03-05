@@ -10,19 +10,24 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hunter.job.domain.Company;
+import vn.hunter.job.domain.Job;
 import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.repository.CompanyRepository;
+import vn.hunter.job.repository.JobRepository;
 import vn.hunter.job.repository.UserRepository;
 
 @Service
 public class CompanyService {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
+    private final JobRepository jobRepository;
 
-    public CompanyService(CompanyRepository companyRepository, UserRepository userRepository) {
+    public CompanyService(CompanyRepository companyRepository, UserRepository userRepository,
+            JobRepository jobRepository) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
+        this.jobRepository = jobRepository;
     }
 
     public ResultPaginationDTO getAllCompanies(Specification<Company> spect, Pageable pageable) {
@@ -60,8 +65,12 @@ public class CompanyService {
     public void deleteCompany(Long id) {
         Optional<Company> companyOptional = this.companyRepository.findById(id);
         if (companyOptional.isPresent()) {
+
             Company company = companyOptional.get();
             List<User> users = this.userRepository.findByCompany(company);
+            List<Job> jobs = jobRepository.findByCompany(company);
+            jobRepository.deleteAll(jobs);
+
             this.userRepository.deleteAll(users);
         }
         this.companyRepository.deleteById(id);

@@ -1,6 +1,8 @@
 package vn.hunter.job.controller;
 
 import vn.hunter.job.domain.User;
+import vn.hunter.job.domain.request.ReqChangePassword;
+import vn.hunter.job.domain.request.ReqUpdateProfile;
 import vn.hunter.job.domain.response.ResCreateUserDTO;
 import vn.hunter.job.domain.response.ResUpdateUserDTO;
 import vn.hunter.job.domain.response.ResUserDTO;
@@ -81,5 +83,21 @@ public class UserController {
         }
         this.userService.deleteUser(id);
         return ResponseEntity.ok().body(null);
+    }
+
+    @PostMapping("/users/change-password")
+    @ApiMessage("Change password")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ReqChangePassword request) throws IdInvalidException {
+        this.userService.changePassword(request);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+
+    @PutMapping("/users/profile")
+    @ApiMessage("Update user")
+    public ResponseEntity<ResUpdateUserDTO> updateProfile(
+            @Valid @RequestBody ReqUpdateProfile request) throws IdInvalidException {
+
+        return ResponseEntity.ok().body(this.userService.updateProfile(request));
     }
 }

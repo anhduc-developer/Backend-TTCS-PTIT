@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import vn.hunter.job.domain.Company;
 import vn.hunter.job.domain.Job;
 import vn.hunter.job.domain.Skill;
 
@@ -14,4 +15,6 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
     List<Job> findBySkills(Skill skill);
 
     List<Job> findBySkillsIn(List<Skill> skills);
+
+    List<Job> findByCompany(Company company);
 }

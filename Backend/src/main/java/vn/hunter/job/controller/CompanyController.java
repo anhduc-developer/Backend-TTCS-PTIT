@@ -46,11 +46,10 @@ public class CompanyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newCompany);
     }
 
-    @PutMapping("/companies/{id}")
+    @PutMapping("/companies")
     @ApiMessage("Update a Company")
-    public ResponseEntity<Company> updateCompany(@Valid @PathVariable("id") Long id,
-            @RequestBody Company updateCompany) {
-        Company newCompany = this.companyService.updateCompany(updateCompany, id);
+    public ResponseEntity<Company> updateCompany(@Valid @RequestBody Company updateCompany) {
+        Company newCompany = this.companyService.updateCompany(updateCompany, updateCompany.getId());
         return ResponseEntity.ok().body(newCompany);
     }
 

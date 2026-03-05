@@ -131,7 +131,31 @@ public class JobService {
         res.setResult(pageJob.getContent());
         return res;
     }
+    // public ResultPaginationDTO getAllJobs(Specification<Job> spec, Pageable
+    // pageable) {
 
+    // // luôn thêm điều kiện active = true
+    // Specification<Job> activeSpec =
+    // (root, query, cb) -> cb.isTrue(root.get("active"));
+
+    // Specification<Job> finalSpec =
+    // (spec == null) ? activeSpec : spec.and(activeSpec);
+
+    // Page<Job> pageJob = this.jobRepository.findAll(finalSpec, pageable);
+
+    // ResultPaginationDTO res = new ResultPaginationDTO();
+    // ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+
+    // mt.setPage(pageable.getPageNumber() + 1); // sửa lỗi luôn cho bạn
+    // mt.setPageSize(pageable.getPageSize());
+    // mt.setPages(pageJob.getTotalPages());
+    // mt.setTotal(pageJob.getTotalElements());
+
+    // res.setMeta(mt);
+    // res.setResult(pageJob.getContent());
+
+    // return res;
+    // }
     public void deleteJob(Long id) {
         this.jobRepository.deleteById(id);
     }

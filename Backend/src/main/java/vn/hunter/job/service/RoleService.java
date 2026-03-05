@@ -1,6 +1,7 @@
 package vn.hunter.job.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -8,9 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import vn.hunter.job.domain.Permission;
 import vn.hunter.job.domain.Role;
+import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.repository.PermissionRepository;
 import vn.hunter.job.repository.RoleRepository;
@@ -73,8 +76,14 @@ public class RoleService {
         return roleDB;
     }
 
-    public void delete(long id) {
-        this.roleRepository.deleteById(id);
+    @Transactional
+    public void delete(Long id) {
+        Role role = roleRepository.findById(id).get();
+        for (User user : role.getUsers()) {
+            user.setRole(null);
+        }
+        role.getPermissions().clear();
+        roleRepository.delete(role);
     }
 
     public ResultPaginationDTO getRoles(Specification<Role> spec, Pageable pageable) {

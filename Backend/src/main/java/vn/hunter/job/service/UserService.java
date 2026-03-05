@@ -8,27 +8,38 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import vn.hunter.job.domain.Company;
 import vn.hunter.job.domain.Role;
 import vn.hunter.job.domain.User;
+import vn.hunter.job.domain.request.ReqChangePassword;
+import vn.hunter.job.domain.request.ReqUpdateProfile;
 import vn.hunter.job.domain.response.ResCreateUserDTO;
 import vn.hunter.job.domain.response.ResUpdateUserDTO;
 import vn.hunter.job.domain.response.ResUserDTO;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
+import vn.hunter.job.repository.ResumeRepository;
 import vn.hunter.job.repository.UserRepository;
+import vn.hunter.job.util.SecurityUtil;
+import vn.hunter.job.util.errors.IdInvalidException;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final CompanyService companyService;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
+    private final ResumeRepository resumeRepository;
 
-    public UserService(UserRepository userRepository, CompanyService companyService, RoleService roleService) {
+    public UserService(UserRepository userRepository, CompanyService companyService, RoleService roleService,
+            PasswordEncoder passwordEncoder, ResumeRepository resumeRepository) {
         this.userRepository = userRepository;
         this.companyService = companyService;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
+        this.resumeRepository = resumeRepository;
     }
 
     public User createUser(User user) {
@@ -68,11 +79,18 @@ public class UserService {
     public User updateUser(User updateUser) {
         Optional<User> optionalUser = this.userRepository.findById(updateUser.getId());
         User currentUser = optionalUser.isPresent() ? optionalUser.get() : null;
+
         if (currentUser != null) {
             currentUser.setAddress(updateUser.getAddress());
             currentUser.setGender(updateUser.getGender());
             currentUser.setAge(updateUser.getAge());
             currentUser.setName(updateUser.getName());
+            if (updateUser.getPassword() != null && !updateUser.getPassword().isEmpty()) {
+                // Lưu ý: Nếu bạn dùng Spring Security, hãy encode password trước khi lưu
+                // Ví dụ:
+                // currentUser.setPassword(passwordEncoder.encode(updateUser.getPassword()));
+                currentUser.setPassword(passwordEncoder.encode(updateUser.getPassword()));
+            }
             if (updateUser.getCompany() != null) {
                 Optional<Company> companyOptional = this.companyService.getCompanyById(updateUser.getCompany().getId());
                 currentUser.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
@@ -86,10 +104,13 @@ public class UserService {
         return currentUser;
     }
 
+    @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new NoSuchElementException("User not found");
         }
+        this.resumeRepository.deleteByUserId(id);
+
         this.userRepository.deleteById(id);
     }
 
@@ -171,5 +192,42 @@ public class UserService {
 
     public User getUserByRefreshTokenAndEmail(String token, String email) {
         return this.userRepository.findByRefreshTokenAndEmail(token, email);
+    }
+
+    public void changePassword(ReqChangePassword request) throws IdInvalidException {
+        String email = SecurityUtil.getCurrentUserLogin().get();
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IdInvalidException("User khong ton tai");
+        }
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+        if (passwordEncoder.matches(
+                request.getNewPassword(),
+                user.getPassword())) {
+            throw new RuntimeException("Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+        String newEncodedPassword = passwordEncoder.encode(request.getNewPassword());
+
+        user.setPassword(newEncodedPassword);
+        user.setRefreshToken(null);
+        this.userRepository.save(user);
+    }
+
+    public ResUpdateUserDTO updateProfile(ReqUpdateProfile request) throws IdInvalidException {
+        String email = SecurityUtil.getCurrentUserLogin().get();
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IdInvalidException("User not found");
+        }
+        user.setName(request.getName());
+        user.setAge(request.getAge());
+        user.setGender(request.getGender());
+        user.setAddress(request.getAddress());
+        User updatedUser = this.userRepository.save(user);
+        return this.convertToResUpdateUserDTO(updatedUser);
     }
 }

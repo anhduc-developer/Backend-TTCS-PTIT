@@ -3,8 +3,6 @@ package vn.hunter.job.controller;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -14,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import com.turkraft.springfilter.boot.Filter;
 import com.turkraft.springfilter.builder.FilterBuilder;
 import com.turkraft.springfilter.converter.FilterSpecificationConverter;
-import com.turkraft.springfilter.parser.FilterParser;
-
 import jakarta.validation.Valid;
 import vn.hunter.job.domain.Company;
 import vn.hunter.job.domain.Job;
@@ -59,9 +55,9 @@ public class ResumeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.resumeService.create(resume));
     }
 
-    @PutMapping("/resumes/{id}")
+    @PutMapping("/resumes")
     @ApiMessage("Update a Resume")
-    public ResponseEntity<ResUpdateResumeDTO> updateResume(@Valid @RequestBody Resume resume)
+    public ResponseEntity<ResUpdateResumeDTO> updateResume(@RequestBody Resume resume)
             throws IdInvalidException {
         Optional<Resume> resumeOptional = this.resumeService.fetchById(resume.getId());
         if (!resumeOptional.isPresent()) {

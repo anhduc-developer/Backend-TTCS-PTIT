@@ -38,12 +38,11 @@ public class PermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.permissionService.create(permission));
     }
 
-    @PutMapping("/permissions/{id}")
+    @PutMapping("/permissions")
     @ApiMessage("Update a Permission")
-    public ResponseEntity<Permission> updatePermission(@Valid @RequestBody Permission permission,
-            @PathVariable("id") Long id)
+    public ResponseEntity<Permission> updatePermission(@Valid @RequestBody Permission permission)
             throws IdInvalidException {
-        Optional<Permission> permissionOptional = this.permissionService.fetchById(id);
+        Optional<Permission> permissionOptional = this.permissionService.fetchById(permission.getId());
         if (permissionOptional.isEmpty()) {
             throw new IdInvalidException("Permission không tồn tại");
         }
@@ -52,7 +51,7 @@ public class PermissionController {
                 throw new IdInvalidException("Permission đã có trong DB");
             }
         }
-        return ResponseEntity.ok().body(this.permissionService.update(id, permission));
+        return ResponseEntity.ok().body(this.permissionService.update(permission.getId(), permission));
     }
 
     @GetMapping("/permissions/{id}")
@@ -80,6 +79,7 @@ public class PermissionController {
         if (permissionOptional.isEmpty()) {
             throw new IdInvalidException("Permission with id = " + id + " không tồn tại");
         }
+        this.permissionService.delete(id);
         return ResponseEntity.ok().body(null);
     }
 }

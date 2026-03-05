@@ -53,11 +53,11 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.jobService.createJob(job));
     }
 
-    @PutMapping("/jobs/{id}")
+    @PutMapping("/jobs")
     @ApiMessage("Update a Job")
-    public ResponseEntity<ResUpdateJobDTO> updateJob(@Valid @RequestBody Job newJob, @PathVariable("id") Long id)
+    public ResponseEntity<ResUpdateJobDTO> updateJob(@Valid @RequestBody Job newJob)
             throws Exception {
-        Job job = this.jobService.fetchJobById(id);
+        Job job = this.jobService.fetchJobById(newJob.getId());
         if (job == null) {
             throw new IdInvalidException("Job not found");
         }

@@ -45,7 +45,7 @@ public class SubscriberController {
         return ResponseEntity.ok().body(this.subscriberService.update(subscriberDB, subscriber));
     }
 
-    @PostMapping("/subscribers/skills")
+    @GetMapping("/subscribers/skills")
     @ApiMessage("Get subscriber's skill")
     public ResponseEntity<Subscriber> getSubscribersSkill() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
