@@ -50,6 +50,9 @@ public class UserService {
         if (user.getRole() != null) {
             Role roleOptional = this.roleService.fetchById(user.getRole().getId());
             user.setRole(roleOptional);
+        } else {
+            Role defaultRole = this.roleService.fetchByName("USER");
+            user.setRole(defaultRole);
         }
         return this.userRepository.save(user);
     }
@@ -142,8 +145,7 @@ public class UserService {
 
     public ResUserDTO convertToResUserDTO(User user) {
         ResUserDTO res = new ResUserDTO();
-        ResUserDTO.UserCompany com = new ResUserDTO.UserCompany();
-        ResUserDTO.RoleUser roleUser = new ResUserDTO.RoleUser();
+
         res.setId(user.getId());
         res.setEmail(user.getEmail());
         res.setName(user.getName());
@@ -151,16 +153,21 @@ public class UserService {
         res.setUpdatedAt(user.getUpdatedAt());
         res.setCreatedAt(user.getCreatedAt());
         res.setGender(user.getGender());
-        if (res.getCompany() != null) {
-            com.setId(res.getCompany().getId());
-            com.setName(res.getCompany().getName());
+
+        if (user.getCompany() != null) {
+            ResUserDTO.UserCompany com = new ResUserDTO.UserCompany();
+            com.setId(user.getCompany().getId());
+            com.setName(user.getCompany().getName());
             res.setCompany(com);
         }
-        if (res.getRole() != null) {
+
+        if (user.getRole() != null) {
+            ResUserDTO.RoleUser roleUser = new ResUserDTO.RoleUser();
             roleUser.setId(user.getRole().getId());
             roleUser.setName(user.getRole().getName());
             res.setRole(roleUser);
         }
+
         return res;
     }
 

@@ -59,4 +59,8 @@ public class SkillService {
         this.skillRepository.delete(currentSkill);
     }
 
+    public Skill fetchSkillByName(String name) {
+        return this.skillRepository.findByName(name);
+    }
+
 }

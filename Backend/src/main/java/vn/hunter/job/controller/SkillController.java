@@ -10,7 +10,6 @@ import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.service.SkillService;
 import vn.hunter.job.util.annotation.ApiMessage;
 import vn.hunter.job.util.errors.IdInvalidException;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import com.turkraft.springfilter.boot.Filter;
 
@@ -28,12 +27,17 @@ public class SkillController {
 
     @PostMapping("/skills")
     @ApiMessage("create a skill")
-    public ResponseEntity<Skill> createSkill(@Valid @RequestBody Skill skill) throws IdInvalidException {
-        boolean isSkillExists = this.skillService.isSkillExists(skill.getName());
-        if (isSkillExists && skill.getName() != null) {
-            throw new IdInvalidException("Skill đã tổn tại");
+    public ResponseEntity<Skill> createSkill(@Valid @RequestBody Skill skill)
+            throws IdInvalidException {
+
+        Skill existingSkill = this.skillService.fetchSkillByName(skill.getName());
+
+        if (existingSkill != null) {
+            throw new IdInvalidException("Skill " + skill.getName() + " đã tồn tại");
         }
+
         Skill newSkill = this.skillService.createSkill(skill);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(newSkill);
     }
 
@@ -41,17 +45,25 @@ public class SkillController {
     @ApiMessage("Update a Skill")
     public ResponseEntity<Skill> updateSkill(@Valid @RequestBody Skill newSkill)
             throws IdInvalidException {
+
         Skill currentSkill = this.skillService.fetchSkillById(newSkill.getId());
+
         if (currentSkill == null) {
             throw new IdInvalidException("Skill id = " + newSkill.getId() + " không tồn tại");
         }
-        boolean isSkillExists = this.skillService.isSkillExists(newSkill.getName());
-        if (isSkillExists && newSkill.getName() != null) {
-            throw new IdInvalidException("Skill " + newSkill.getName() + " đã tổn tại");
+
+        Skill skillByName = this.skillService.fetchSkillByName(newSkill.getName());
+
+        // nếu tồn tại skill cùng tên nhưng id khác thì mới báo lỗi
+        if (skillByName != null && !skillByName.getId().equals(newSkill.getId())) {
+            throw new IdInvalidException("Skill " + newSkill.getName() + " đã tồn tại");
         }
+
         currentSkill.setName(newSkill.getName());
+
         Skill skill = this.skillService.updateSkill(currentSkill);
-        return ResponseEntity.ok().body(skill);
+
+        return ResponseEntity.ok(skill);
     }
 
     @GetMapping("/skills/{id}")

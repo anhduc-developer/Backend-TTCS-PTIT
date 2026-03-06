@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.turkraft.springfilter.boot.Filter;
@@ -92,25 +93,46 @@ public class ResumeController {
 
     @GetMapping("/resumes")
     @ApiMessage("Fetch all resumes")
-    public ResponseEntity<ResultPaginationDTO> fetchAll(@Filter Specification<Resume> spec, Pageable pageable) {
-        List<Long> arrJobIds = null;
-        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true ? SecurityUtil.getCurrentUserLogin().get()
-                : "";
+    public ResponseEntity<ResultPaginationDTO> fetchAll(
+            @Filter Specification<Resume> spec,
+            Pageable pageable) {
+
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
         User currentUser = this.userService.handleGetUserByUsername(email);
+
+        // Nếu là ADMIN -> xem tất cả resumes
+        if (currentUser != null && currentUser.getRole() != null
+                && "SUPER_ADMIN".equalsIgnoreCase(currentUser.getRole().getName())) {
+
+            return ResponseEntity.ok().body(
+                    this.resumeService.fetchAllResume(spec, pageable));
+        }
+
+        // Nếu không phải admin -> chỉ xem resume của company
+        List<Long> arrJobIds = null;
+
         if (currentUser != null) {
             Company userCompany = currentUser.getCompany();
+
             if (userCompany != null) {
                 List<Job> companyJobs = userCompany.getJobs();
-                if (companyJobs != null && companyJobs.size() > 0) {
-                    arrJobIds = companyJobs.stream().map(x -> x.getId())
+
+                if (companyJobs != null && !companyJobs.isEmpty()) {
+                    arrJobIds = companyJobs
+                            .stream()
+                            .map(Job::getId)
                             .collect(Collectors.toList());
                 }
             }
         }
+
         Specification<Resume> jobInSpec = filterSpecificationConverter
                 .convert(filterBuilder.field("job").in(filterBuilder.input(arrJobIds)).get());
+
         Specification<Resume> finalSpec = jobInSpec.and(spec);
-        return ResponseEntity.ok().body(this.resumeService.fetchAllResume(finalSpec, pageable));
+
+        return ResponseEntity.ok().body(
+                this.resumeService.fetchAllResume(finalSpec, pageable));
     }
 
     @PostMapping("/resumes/by-user")
