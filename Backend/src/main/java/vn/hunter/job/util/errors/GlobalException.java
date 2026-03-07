@@ -18,6 +18,16 @@ import vn.hunter.job.domain.request.RestResponse;
 
 @RestControllerAdvice
 public class GlobalException {
+    // handle All Exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Internal Server Error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
+
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
