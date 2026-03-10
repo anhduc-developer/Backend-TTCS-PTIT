@@ -102,7 +102,7 @@ public class ResumeController {
 
         // Nếu là ADMIN -> xem tất cả resumes
         if (currentUser != null && currentUser.getRole() != null
-                && "SUPER_ADMIN".equalsIgnoreCase(currentUser.getRole().getName())) {
+                && "ADMIN".equalsIgnoreCase(currentUser.getRole().getName())) {
 
             return ResponseEntity.ok().body(
                     this.resumeService.fetchAllResume(spec, pageable));

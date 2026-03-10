@@ -201,27 +201,29 @@ public class UserService {
         return this.userRepository.findByRefreshTokenAndEmail(token, email);
     }
 
-    public void changePassword(ReqChangePassword request) throws IdInvalidException {
-        String email = SecurityUtil.getCurrentUserLogin().get();
+    public void changePassword(ReqChangePassword request) {
+
+        String email = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new RuntimeException("User chưa đăng nhập"));
+
         User user = userRepository.findByEmail(email);
+
         if (user == null) {
-            throw new IdInvalidException("User khong ton tai");
+            throw new RuntimeException("User không tồn tại");
         }
-        if (!passwordEncoder.matches(
-                request.getOldPassword(),
-                user.getPassword())) {
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new RuntimeException("Mật khẩu hiện tại không đúng");
         }
-        if (passwordEncoder.matches(
-                request.getNewPassword(),
-                user.getPassword())) {
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
             throw new RuntimeException("Mật khẩu mới không được trùng mật khẩu cũ");
         }
-        String newEncodedPassword = passwordEncoder.encode(request.getNewPassword());
 
-        user.setPassword(newEncodedPassword);
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setRefreshToken(null);
-        this.userRepository.save(user);
+
+        userRepository.save(user);
     }
 
     public ResUpdateUserDTO updateProfile(ReqUpdateProfile request) throws IdInvalidException {

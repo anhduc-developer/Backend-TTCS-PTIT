@@ -43,7 +43,7 @@ public class SecurityConfiguration {
         String[] whiteList = {
                 "/",
                 "/api/v1/auth/login", "/api/v1/auth/register", "/storage/**", "/api/v1/email/**",
-                "/api/v1/users/change-password", "/api/v1/users/profile", "/api/v1/dashboard", "/v3/api-docs/**",
+                "/api/v1/dashboard", "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html"
 
@@ -59,7 +59,8 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/companies/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
-                                .anyRequest().authenticated())
+                                .requestMatchers("/api/v1/users/change-password").authenticated().anyRequest()
+                                .authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 // default exception

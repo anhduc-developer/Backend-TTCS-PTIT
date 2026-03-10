@@ -3,6 +3,7 @@ package vn.hunter.job.controller;
 import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.request.ReqChangePassword;
 import vn.hunter.job.domain.request.ReqUpdateProfile;
+import vn.hunter.job.domain.request.RestResponse;
 import vn.hunter.job.domain.response.ResCreateUserDTO;
 import vn.hunter.job.domain.response.ResUpdateUserDTO;
 import vn.hunter.job.domain.response.ResUserDTO;
@@ -87,10 +88,16 @@ public class UserController {
 
     @PostMapping("/users/change-password")
     @ApiMessage("Change password")
-    public ResponseEntity<?> changePassword(
+    public ResponseEntity<RestResponse<Object>> changePassword(
             @Valid @RequestBody ReqChangePassword request) throws IdInvalidException {
+
         this.userService.changePassword(request);
-        return ResponseEntity.ok("Đổi mật khẩu thành công");
+
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(200);
+        res.setMessage("Đổi mật khẩu thành công");
+
+        return ResponseEntity.ok(res);
     }
 
     @PutMapping("/users/profile")

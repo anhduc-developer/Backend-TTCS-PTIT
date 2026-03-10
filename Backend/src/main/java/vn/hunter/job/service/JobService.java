@@ -11,18 +11,22 @@ import org.springframework.stereotype.Service;
 import vn.hunter.job.domain.Company;
 import vn.hunter.job.domain.Job;
 import vn.hunter.job.domain.Skill;
+import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.response.ResCreateJobDTO;
 import vn.hunter.job.domain.response.ResUpdateJobDTO;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
 import vn.hunter.job.repository.CompanyRepository;
 import vn.hunter.job.repository.JobRepository;
 import vn.hunter.job.repository.SkillRepository;
+import vn.hunter.job.repository.UserRepository;
+import vn.hunter.job.util.SecurityUtil;
 
 @Service
 public class JobService {
     private final JobRepository jobRepository;
     private final SkillRepository skillRepository;
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
     public boolean isJobExists(Long id) {
         Optional<Job> jobOptional = this.jobRepository.findById(id);
@@ -30,10 +34,11 @@ public class JobService {
     }
 
     public JobService(JobRepository jobRepository, SkillRepository skillRepository,
-            CompanyRepository companyRepository) {
+            CompanyRepository companyRepository, UserRepository userRepository) {
         this.jobRepository = jobRepository;
         this.companyRepository = companyRepository;
         this.skillRepository = skillRepository;
+        this.userRepository = userRepository;
 
     }
 
@@ -121,6 +126,7 @@ public class JobService {
 
     public ResultPaginationDTO getAllJobs(Specification<Job> spec, Pageable pageable) {
         Page<Job> pageJob = this.jobRepository.findAll(spec, pageable);
+
         ResultPaginationDTO res = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
         mt.setPage(pageable.getPageSize() + 1);
