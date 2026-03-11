@@ -129,8 +129,12 @@ public class ResumeController {
         Specification<Resume> jobInSpec = filterSpecificationConverter
                 .convert(filterBuilder.field("job").in(filterBuilder.input(arrJobIds)).get());
 
-        Specification<Resume> finalSpec = jobInSpec.and(spec);
+        Specification<Resume> companySpec = (root, query, cb) -> cb.equal(root.get("job").get("company").get("id"),
+                currentUser.getCompany().getId());
 
+        Specification<Resume> finalSpec = spec == null
+                ? companySpec
+                : companySpec.and(spec);
         return ResponseEntity.ok().body(
                 this.resumeService.fetchAllResume(finalSpec, pageable));
     }
