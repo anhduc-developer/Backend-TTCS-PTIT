@@ -54,6 +54,8 @@ public class FileController {
 
         String uploadFile = this.fileService.store(file, folder);
         ResUploadFileDTO res = new ResUploadFileDTO(uploadFile, Instant.now());
+        System.out.println(">>> fileName = " + fileName);
+        System.out.println(">>> folder = " + folder);
         return ResponseEntity.ok().body(res);
     }
 
@@ -77,4 +79,7 @@ public class FileController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
+
 }
+// http://localhost:8080/api/v1/skills?filter=name ~
+// 'BACKEND'&page=1&size=10&sort=updatedAt,desc

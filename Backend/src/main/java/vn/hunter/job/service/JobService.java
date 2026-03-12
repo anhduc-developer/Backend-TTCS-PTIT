@@ -126,18 +126,22 @@ public class JobService {
 
     public ResultPaginationDTO getAllJobs(Specification<Job> spec, Pageable pageable) {
 
-        User currentUser = this.userRepository.findByEmail(SecurityUtil.getCurrentUserLogin().get());
+        Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
 
-        // nếu role = 2 thì lọc theo company
-        if (currentUser.getRole().getId() == 4) {
+        if (currentUserLogin.isPresent()) {
 
-            Specification<Job> companySpec = (root, query, cb) -> cb.equal(root.get("company").get("id"),
-                    currentUser.getCompany().getId());
+            User currentUser = userRepository.findByEmail(currentUserLogin.get());
 
-            spec = spec == null ? companySpec : spec.and(companySpec);
+            if (currentUser != null && currentUser.getRole().getId() == 4) {
+
+                Specification<Job> companySpec = (root, query, cb) -> cb.equal(root.get("company").get("id"),
+                        currentUser.getCompany().getId());
+
+                spec = spec == null ? companySpec : spec.and(companySpec);
+            }
         }
 
-        Page<Job> pageJob = this.jobRepository.findAll(spec, pageable);
+        Page<Job> pageJob = jobRepository.findAll(spec, pageable);
 
         ResultPaginationDTO res = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();

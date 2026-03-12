@@ -22,6 +22,7 @@ import vn.hunter.job.domain.response.ResCreateResumeDTO;
 import vn.hunter.job.domain.response.ResFetchResumeDTO;
 import vn.hunter.job.domain.response.ResUpdateResumeDTO;
 import vn.hunter.job.domain.response.ResultPaginationDTO;
+import vn.hunter.job.repository.ResumeRepository;
 import vn.hunter.job.service.ResumeService;
 import vn.hunter.job.service.UserService;
 import vn.hunter.job.util.SecurityUtil;
@@ -35,14 +36,17 @@ public class ResumeController {
     private final UserService userService;
     private final FilterBuilder filterBuilder;
     private final FilterSpecificationConverter filterSpecificationConverter;
+    private final ResumeRepository resumeRepository;
 
     public ResumeController(ResumeService resumeService,
             UserService userService,
-            FilterSpecificationConverter filterSpecificationConverter, FilterBuilder filterBuilder) {
+            FilterSpecificationConverter filterSpecificationConverter, FilterBuilder filterBuilder,
+            ResumeRepository resumeRepository) {
         this.resumeService = resumeService;
         this.userService = userService;
         this.filterSpecificationConverter = filterSpecificationConverter;
         this.filterBuilder = filterBuilder;
+        this.resumeRepository = resumeRepository;
     }
 
     @PostMapping("/resumes")
@@ -143,5 +147,16 @@ public class ResumeController {
     @ApiMessage("Get list resumes by user")
     public ResponseEntity<ResultPaginationDTO> fetchResumeByUser(Pageable pageable) {
         return ResponseEntity.ok().body(this.resumeService.fetchResumeByUser(pageable));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> fetchResume(
+            @RequestParam(required = false) Long jobId) {
+
+        if (jobId != null) {
+            return ResponseEntity.ok(resumeRepository.findByJobId(jobId));
+        }
+
+        return ResponseEntity.ok(resumeRepository.findAll());
     }
 }
