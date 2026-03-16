@@ -149,14 +149,4 @@ public class ResumeController {
         return ResponseEntity.ok().body(this.resumeService.fetchResumeByUser(pageable));
     }
 
-    @GetMapping
-    public ResponseEntity<?> fetchResume(
-            @RequestParam(required = false) Long jobId) {
-
-        if (jobId != null) {
-            return ResponseEntity.ok(resumeRepository.findByJobId(jobId));
-        }
-
-        return ResponseEntity.ok(resumeRepository.findAll());
-    }
 }
