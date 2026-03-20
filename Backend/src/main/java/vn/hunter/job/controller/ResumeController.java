@@ -95,6 +95,9 @@ public class ResumeController {
         return ResponseEntity.ok().body(this.resumeService.getResume(resumeOptional.get()));
     }
 
+
+
+    
     @GetMapping("/resumes")
     @ApiMessage("Fetch all resumes")
     public ResponseEntity<ResultPaginationDTO> fetchAll(
