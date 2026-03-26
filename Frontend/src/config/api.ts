@@ -336,3 +336,9 @@ export const callFetchSubscriber = (query: string) => {
 export const callFetchSubscriberById = (id: string) => {
   return axios.get<IBackendRes<ISubscribers>>(`/api/v1/subscribers/${id}`);
 };
+
+// FILE: config/api.ts
+export const callFetchJobsByCompany = (query: string) => {
+    // Chỉ gọi vào /api/v1/jobs và truyền query có chứa filter
+    return axios.get(`/api/v1/jobs?${query}`);
+}
