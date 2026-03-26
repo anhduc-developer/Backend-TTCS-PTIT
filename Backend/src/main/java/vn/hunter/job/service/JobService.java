@@ -132,7 +132,7 @@ public class JobService {
 
             User currentUser = userRepository.findByEmail(currentUserLogin.get());
 
-            if (currentUser != null && currentUser.getRole().getId() == 4) {
+            if (currentUser != null && currentUser.getRole().getName().equals("HR")) {
 
                 Specification<Job> companySpec = (root, query, cb) -> cb.equal(root.get("company").get("id"),
                         currentUser.getCompany().getId());
