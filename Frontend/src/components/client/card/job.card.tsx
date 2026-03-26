@@ -48,21 +48,29 @@ const JobCard = (props: IProps) => {
         }
 
         //check query string
+        const queryName = searchParams.get("name");
         const queryLocation = searchParams.get("location");
-        const querySkills = searchParams.get("skills")
-        if (queryLocation || querySkills) {
+        const querySkills = searchParams.get("skills");
+
+        if (queryName || queryLocation || querySkills) {
             let q = "";
+            if (queryName) {
+                q += `name~'*${queryName}*'`;
+            }
+
             if (queryLocation) {
-                q = sfIn("location", queryLocation.split(",")).toString();
+                if(q) q+= " and ";
+                q += sfIn("location", queryLocation.split(",")).toString();
             }
 
             if (querySkills) {
-                q = queryLocation ?
-                    q + " and " + `${sfIn("skills", querySkills.split(","))}`
-                    : `${sfIn("skills", querySkills.split(","))}`;
+                if(q) q+= " and ";
+                q += sfIn("skills", querySkills.split(",")).toString();
             }
 
-            query += `&filter=${encodeURIComponent(q)}`;
+            if(q){
+                query += `&filter=${encodeURIComponent(q)}`;
+            }
         }
 
         const res = await callFetchJob(query);
