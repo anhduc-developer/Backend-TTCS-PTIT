@@ -30,6 +30,32 @@ public class SubscriberService {
         this.emailService = emailService;
     }
 
+    public Subscriber upsert(Subscriber subscriber) {
+        // 1. Kiểm tra xem email đã tồn tại trong DB chưa
+        Subscriber existingSub = this.subscriberRepository.findByEmail(subscriber.getEmail());
+
+        // 2. Xử lý danh sách Skills từ Database (tránh lưu ID ảo)
+        List<Skill> dbSkills = null;
+        if (subscriber.getSkills() != null) {
+            List<Long> ids = subscriber.getSkills()
+                    .stream().map(Skill::getId)
+                    .collect(Collectors.toList());
+            dbSkills = this.skillRepository.findByIdIn(ids);
+        }
+
+        if (existingSub != null) {
+            // Trường hợp: UPDATE
+            existingSub.setSkills(dbSkills);
+            if (subscriber.getName() != null) {
+                existingSub.setName(subscriber.getName());
+            }
+            return this.subscriberRepository.save(existingSub);
+        } else {
+            // Trường hợp: CREATE MỚI
+            subscriber.setSkills(dbSkills);
+            return this.subscriberRepository.save(subscriber);
+        }
+    }
     // @Scheduled(cron = "*/10 * * * * *")
     // public void testCron() {
     // System.out.println("Test Cron");

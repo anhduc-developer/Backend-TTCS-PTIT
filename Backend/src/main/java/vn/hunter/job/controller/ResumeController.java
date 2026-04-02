@@ -7,9 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import com.turkraft.springfilter.boot.Filter;
 import com.turkraft.springfilter.builder.FilterBuilder;
 import com.turkraft.springfilter.converter.FilterSpecificationConverter;
@@ -95,9 +93,6 @@ public class ResumeController {
         return ResponseEntity.ok().body(this.resumeService.getResume(resumeOptional.get()));
     }
 
-
-
-    
     @GetMapping("/resumes")
     @ApiMessage("Fetch all resumes")
     public ResponseEntity<ResultPaginationDTO> fetchAll(

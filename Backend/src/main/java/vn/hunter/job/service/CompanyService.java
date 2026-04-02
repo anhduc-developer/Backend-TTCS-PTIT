@@ -58,6 +58,7 @@ public class CompanyService {
             company.setAddress(updateCompany.getAddress());
             company.setDescription(updateCompany.getDescription());
             company.setLogo(updateCompany.getLogo());
+            company.setOutstanding(updateCompany.isOutstanding());
             return this.companyRepository.save(company);
         }).orElseThrow(() -> new NoSuchElementException("Company not found"));
     }

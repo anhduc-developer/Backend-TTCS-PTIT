@@ -16,4 +16,6 @@ public class DashboardDTO {
     private long totalCompanies;
     private long totalResumes;
     private long totalSkills;
+    private long totalPermissions;
+    private long totalSubscribers;
 }

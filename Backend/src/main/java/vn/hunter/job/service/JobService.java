@@ -20,6 +20,7 @@ import vn.hunter.job.repository.JobRepository;
 import vn.hunter.job.repository.SkillRepository;
 import vn.hunter.job.repository.UserRepository;
 import vn.hunter.job.util.SecurityUtil;
+import vn.hunter.job.util.constant.JobStateEnum;
 
 @Service
 public class JobService {
@@ -55,6 +56,14 @@ public class JobService {
                 job.setCompany(companyOptional.get());
             }
         }
+        String currentUserEmail = SecurityUtil.getCurrentUserLogin().orElse("");
+        User currentUser = this.userRepository.findByEmail(currentUserEmail);
+        if (currentUser != null && "HR".equals(currentUser.getRole().getName())) {
+            job.setStatus(JobStateEnum.PENDING_PAYMENT);
+            job.setActive(false);
+        } else {
+            job.setStatus(JobStateEnum.APPROVED);
+        }
         Job currentJob = this.jobRepository.save(job);
         ResCreateJobDTO dto = new ResCreateJobDTO();
         dto.setId(currentJob.getId());
@@ -67,6 +76,7 @@ public class JobService {
         dto.setActive(currentJob.isActive());
         dto.setCreatedAt(currentJob.getCreatedAt());
         dto.setCreatedBy(currentJob.getCreatedBy());
+        dto.setStatus(currentJob.getStatus());
         if (currentJob.getSkills() != null) {
             List<String> skills = currentJob.getSkills()
                     .stream().map(item -> item.getName())
@@ -94,10 +104,13 @@ public class JobService {
         jobInDB.setSalary(job.getSalary());
         jobInDB.setQuantity(job.getQuantity());
         jobInDB.setLocation(job.getLocation());
+        jobInDB.setDescription(job.getDescription());
         jobInDB.setLevel(job.getLevel());
         jobInDB.setStartDate(job.getStartDate());
         jobInDB.setEndDate(job.getEndDate());
         jobInDB.setActive(job.isActive());
+        jobInDB.setHot(job.isHot());
+        jobInDB.setStatus(job.getStatus());
         Job currentJob = this.jobRepository.save(jobInDB);
         ResUpdateJobDTO dto = new ResUpdateJobDTO();
         dto.setId(currentJob.getId());

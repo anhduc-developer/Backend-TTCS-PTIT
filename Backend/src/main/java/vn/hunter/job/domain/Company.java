@@ -43,7 +43,7 @@ public class Company {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
+    private boolean outstanding;
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     @JsonIgnore
     List<User> users;

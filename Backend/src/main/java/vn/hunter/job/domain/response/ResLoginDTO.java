@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hunter.job.domain.Role;
+import vn.hunter.job.util.constant.GenderEnum;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -27,6 +28,9 @@ public class ResLoginDTO {
         private String name;
         private String email;
         private Role role;
+        private int age;
+        private String address;
+        private GenderEnum gender;
     }
 
     @Getter

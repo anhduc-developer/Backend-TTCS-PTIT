@@ -28,6 +28,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hunter.job.util.SecurityUtil;
+import vn.hunter.job.util.constant.JobStateEnum;
 import vn.hunter.job.util.constant.LevelEnum;
 
 @Entity
@@ -55,11 +56,12 @@ public class Job {
     private Instant startDate;
     private Instant endDate;
     private boolean active;
+    private boolean hot;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
+    private JobStateEnum status;
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;

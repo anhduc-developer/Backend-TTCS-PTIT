@@ -11,9 +11,11 @@ import vn.hunter.job.domain.User;
 import vn.hunter.job.domain.response.DashboardDTO;
 import vn.hunter.job.repository.CompanyRepository;
 import vn.hunter.job.repository.JobRepository;
+import vn.hunter.job.repository.PermissionRepository;
 import vn.hunter.job.repository.ResumeRepository;
 import vn.hunter.job.repository.RoleRepository;
 import vn.hunter.job.repository.SkillRepository;
+import vn.hunter.job.repository.SubscriberRepository;
 import vn.hunter.job.repository.UserRepository;
 import vn.hunter.job.util.SecurityUtil;
 
@@ -27,6 +29,8 @@ public class DashboardService {
     private final CompanyRepository companyRepository;
     private final ResumeRepository resumeRepository;
     private final SkillRepository skillRepository;
+    private final PermissionRepository permissionRepository;
+    private final SubscriberRepository subscriberRepository;
 
     public DashboardDTO getDashboard() {
         String email = SecurityUtil.getCurrentUserLogin().get();
@@ -39,6 +43,8 @@ public class DashboardService {
             dto.setTotalCompanies(companyRepository.count());
             dto.setTotalResumes(resumeRepository.count());
             dto.setTotalSkills(this.skillRepository.count());
+            dto.setTotalPermissions(this.permissionRepository.count());
+            dto.setTotalSubscribers(this.subscriberRepository.count());
         } else {
             List<Job> jobs = this.jobRepository.findAll();
             long totalJob = 0;

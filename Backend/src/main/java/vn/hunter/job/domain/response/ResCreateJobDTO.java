@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import vn.hunter.job.util.constant.JobStateEnum;
 import vn.hunter.job.util.constant.LevelEnum;
 
 @Setter
@@ -21,5 +22,6 @@ public class ResCreateJobDTO {
     private boolean active;
     private Instant createdAt;
     private String createdBy;
+    private JobStateEnum status;
     private List<String> skills;
 }
