@@ -48,18 +48,12 @@ const ViewJob = (props) => {
 
   const { user } = useContext(AuthContext);
   const [form] = Form.useForm();
-
-  // States quản lý Modal
   const [isOpenCreateJob, setIsOpenCreateJob] = useState(false);
   const [isOpenUpdateJob, setIsOpenUpdateJob] = useState(false);
   const [dataUpdateJob, setDataUpdateJob] = useState({});
-
-  // States cho QR Payment
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedJobForPay, setSelectedJobForPay] = useState(null);
   const [loadingPayment, setLoadingPayment] = useState(false);
-
-  // --- Logic Tìm kiếm ---
   const onFinish = (values) => {
     const { name, companyName, status } = values;
     let queryParts = [];
@@ -68,16 +62,12 @@ const ViewJob = (props) => {
     if (status) queryParts.push(`status='${status}'`);
 
     const filter = queryParts.join(" AND ");
-    // Khi lọc luôn ép về trang 1 để tránh lỗi phân trang
     fetchJobs({ page: 1, size, ...(filter && { filter }) });
   };
-
   const handleReset = () => {
     form.resetFields();
     fetchJobs({ page: 1, size });
   };
-
-  // --- Logic Thanh toán ---
   const showQRModal = (record) => {
     setSelectedJobForPay(record);
     setIsQRModalOpen(true);
@@ -105,7 +95,6 @@ const ViewJob = (props) => {
     setLoadingPayment(false);
   };
 
-  // --- Logic Admin Duyệt tin ---
   const handleApproveJob = (record, newStatus) => {
     const isApprove = newStatus === "APPROVED";
     Modal.confirm({

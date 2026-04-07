@@ -20,7 +20,7 @@ import { useState } from "react";
 import ModalUser from "./modal.create.user";
 import UpdateUser from "./modal.update.user";
 import { callDeleteUser } from "../../../services/api.service";
-import UserDetail from "./model.detail.user";
+import UserDetail from "./modal.detail.user";
 const ViewUser = (props) => {
   const {
     userData,
