@@ -146,30 +146,16 @@ Spring-Boot-RESTful-API/
 └── README.md                  # Tài liệu này
 ```
 
-## 🎯 Những Gì Tôi Học Được
-
-Trong quá trình phát triển dự án này, tôi đã học được:
-
-- **Kiến trúc phần mềm**: Thiết kế hệ thống full-stack với tách biệt rõ ràng backend và frontend
-- **RESTful API Design**: Thiết kế và triển khai API theo chuẩn REST
-- **Xác thực và Bảo mật**: Triển khai JWT authentication và role-based authorization
-- **ORM và Database**: Sử dụng JPA để tương tác với cơ sở dữ liệu
-- **Frontend Development**: Xây dựng giao diện người dùng với React hooks và context
-- **UI/UX Design**: Thiết kế giao diện thân thiện với Ant Design
-- **Testing**: Viết unit tests và integration tests
-- **DevOps**: Cấu hình build tools và deployment
-
 ## 🤝 Đóng Góp
 
 Dự án này là phần của quá trình học tập của tôi. Nếu bạn có góp ý hoặc muốn cải thiện, hãy tạo issue hoặc pull request!
 
 ## 👨‍💻 Tác Giả
 
-**Nguyễn Văn A** - Intern Developer
+**Mai Anh Đức** - Intern Developer
 
-- Email: your.email@example.com
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- GitHub: [Your GitHub](https://github.com/yourusername)
+- Email: tomorrowduc@gmail.com
+- GitHub: [anhduc-developer](https://github.com/anhduc-developer)
 
 ## 📄 Giấy Phép
 
