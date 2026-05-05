@@ -1,0 +1,1749 @@
+import {
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Row,
+  Col,
+  DatePicker,
+  Switch,
+  notification,
+} from "antd";
+import { createJobAPI } from "../../../services/api.service";
+import { useState } from "react";
+import ReactQuill from "react-quill-new";
+import { useTranslation } from "react-i18next";
+
+const { RangePicker } = DatePicker;
+
+const CreateJob = (props) => {
+  const { t } = useTranslation();
+
+  const {
+    isOpenCreateJob,
+    setIsOpenCreateJob,
+    skillData,
+    companyData,
+    fetchJobs,
+  } = props;
+
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  const handleCancel = () => {
+    setIsOpenCreateJob(false);
+    form.resetFields();
+  };
+
+  const onFinish = async (values) => {
+    setLoading(true);
+
+    const data = {
+      name: values.name,
+      skills: values.skills.map((id) => ({ id })),
+      location: values.location,
+      salary: +values.salary,
+      quantity: +values.quantity,
+      level: values.level,
+      company: { id: values.companyId },
+      startDate: values.startDate,
+      endDate: values.endDate,
+      active: values.active,
+      description: values.description,
+      hot: values.hot,
+    };
+
+    const res = await createJobAPI(data);
+
+    if (res.data) {
+      notification.success({
+        message: t("job.createSuccess"),
+        description: t("job.createSuccessDesc"),
+      });
+      fetchJobs();
+      setIsOpenCreateJob(false);
+      form.resetFields();
+    } else {
+      notification.error({
+        message: t("job.createError"),
+        description: res.message || t("error.checkData"),
+      });
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <Modal
+      title={t("job.createTitle")}
+      open={isOpenCreateJob}
+      onCancel={handleCancel}
+      width={1000}
+      onOk={() => form.submit()}
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Row gutter={16}>
+          <Col span={10}>
+            <Form.Item
+              label={t("form.jobName")}
+              name="name"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <Input placeholder={t("job.nameInput")} />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label={t("form.skills")}
+              name="skills"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <Select
+                mode="multiple"
+                placeholder={t("job.selectSkill")}
+                options={skillData.map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label={t("form.location")}
+              name="location"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <Select
+                placeholder={t("job.selectLocation")}
+                options={[
+                  { label: t("location.hn"), value: "HN" },
+                  { label: t("location.hcm"), value: "HCM" },
+                  { label: t("location.dn"), value: "DN" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={10}>
+            <Form.Item
+              label={t("form.salary")}
+              name="salary"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder={t("job.salaryInput")}
+                addonAfter="đ"
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label={t("form.quantity")}
+              name="quantity"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder={t("job.quantityInput")}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label={t("form.level")}
+              name="level"
+              rules={[{ required: true, message: t("validation.required") }]}
+            >
+              <Select
+                placeholder={t("job.selectLevel")}
+                options={[
+                  { label: "Intern", value: "INTERN" },
+                  { label: "Junior", value: "JUNIOR" },
+                  { label: "Senior", value: "SENIOR" },
+                  { label: "Fresher", value: "FRESHER" },
+                  { label: "Middle", value: "MIDDLE" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item label={t("form.description")} name="description">
+          <ReactQuill
+            theme="snow"
+            placeholder={t("job.descriptionInput")}
+            style={{ height: "200px", marginBottom: "50px" }}
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+export default CreateJob;
+import {
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  notification,
+  Row,
+  Select,
+  Switch,
+} from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import ReactQuill from "react-quill-new";
+import dayjs from "dayjs";
+import { callPutJob } from "../../../services/api.service";
+const UpdateJob = (props) => {
+  const { t } = useTranslation();
+  const {
+    isOpenUpdateJob,
+    setIsOpenUpdateJob,
+    dataUpdateJob,
+    companyData,
+    fetchJobs,
+    skillData,
+  } = props;
+
+  // 1. CHUYỂN DESCRIPTION LÊN ĐẦU
+  const [description, setDescription] = useState("");
+
+  // XÓA ĐOẠN cleanDescription Ở ĐÂY (VÌ NÓ GÂY LỖI TRUY CẬP TRƯỚC KHI KHỞI TẠO)
+
+  const skillIds = dataUpdateJob.skills?.map((skill) => skill.id) || [];
+  const [form] = Form.useForm();
+
+  const handleCancel = () => {
+    setIsOpenUpdateJob(false);
+    form.resetFields(); // Nên thêm để reset form
+  };
+
+  useEffect(() => {
+    if (dataUpdateJob && isOpenUpdateJob) {
+      form.setFieldsValue({
+        ...dataUpdateJob,
+        skills: skillIds,
+        startDate: dataUpdateJob.startDate
+          ? dayjs(dataUpdateJob.startDate)
+          : null,
+        endDate: dataUpdateJob.endDate ? dayjs(dataUpdateJob.endDate) : null,
+        companyId: dataUpdateJob.company?.id,
+      });
+
+      setDescription(dataUpdateJob.description || "");
+    }
+  }, [dataUpdateJob, isOpenUpdateJob]);
+
+  const onFinish = async (values) => {
+    // 2. CHỈ XỬ LÝ CLEAN TẠI ĐÂY KHI BẤM SUBMIT
+    const cleanDescription = description
+      ? description.replace(/&nbsp;/g, " ")
+      : "";
+    const data = {
+      id: dataUpdateJob.id,
+      name: values.name,
+      skills: values.skills.map((id) => ({ id })),
+      location: values.location,
+      salary: +values.salary,
+      quantity: +values.quantity,
+      level: values.level,
+      company: { id: values.companyId },
+      startDate: values.startDate,
+      endDate: values.endDate,
+      active: values.active,
+      description: cleanDescription, // Gửi bản đã dọn dẹp
+      hot: values.hot,
+    };
+
+    console.log(">>> Data gửi đi:", data);
+
+    const res = await callPutJob(data);
+    if (res.data) {
+      notification.success({
+        title: "Update Job Success!",
+        description: "Cập nhật job thành công",
+      });
+      setIsOpenUpdateJob(false);
+      fetchJobs();
+    } else {
+      notification.error({
+        message: "Update Job Failed",
+        description: JSON.stringify(res.message),
+      });
+    }
+  };
+  return (
+    <Modal
+      title="Tạo mới Job"
+      open={isOpenUpdateJob}
+      onCancel={handleCancel}
+      width={1000}
+      onOk={() => form.submit()}
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        {/* ROW 1 */}
+        <Row gutter={16}>
+          <Col span={10}>
+            <Form.Item label="Tên Job" name="name" rules={[{ required: true }]}>
+              <Input placeholder="Nhập tên job" />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Kỹ năng yêu cầu"
+              name="skills"
+              rules={[{ required: true }]}
+            >
+              <Select
+                mode="multiple"
+                placeholder="Please select a skill"
+                options={skillData.map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Địa điểm"
+              name="location"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Chọn địa điểm"
+                options={[
+                  { label: "Hà Nội", value: "HN" },
+                  { label: "Hồ Chí Minh", value: "HCM" },
+                  { label: "Đà Nẵng", value: "DN" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* ROW 2 */}
+        <Row gutter={16}>
+          <Col span={10}>
+            <Form.Item
+              label="Mức lương"
+              name="salary"
+              rules={[{ required: true }]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Nhập lương"
+                addonAfter="đ"
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Số lượng"
+              name="quantity"
+              rules={[{ required: true }]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Nhập số lượng"
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Trình độ"
+              name="level"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Please select a level"
+                options={[
+                  { label: "Intern", value: "INTERN" },
+                  { label: "Junior", value: "JUNIOR" },
+                  { label: "Senior", value: "SENIOR" },
+                  { label: "Fresher", value: "FRESHER" },
+                  { label: "Middle", value: "MIDDLE" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* ROW 3 */}
+        {/* ROW 3 */}
+        <Row gutter={16}>
+          <Col span={6}>
+            <Form.Item
+              label="Thuộc Công Ty"
+              name="companyId"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Chọn công ty"
+                options={companyData.map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={5}>
+            <Form.Item
+              label="Ngày bắt đầu"
+              name="startDate"
+              rules={[{ required: true }]}
+            >
+              <DatePicker style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+
+          <Col span={5}>
+            <Form.Item
+              label="Ngày kết thúc"
+              name="endDate"
+              rules={[{ required: true }]}
+            >
+              <DatePicker style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+
+          {/* Nút Trạng thái Active */}
+          <Col span={4}>
+            <Form.Item
+              label="Trạng thái"
+              name="active"
+              valuePropName="checked"
+              initialValue={true}
+            >
+              <Switch checkedChildren="ACTIVE" unCheckedChildren="INACTIVE" />
+            </Form.Item>
+          </Col>
+
+          {/* MỚI: Nút Bật/Tắt HOT */}
+          <Col span={4}>
+            <Form.Item
+              label="Tin Hot"
+              name="hot"
+              valuePropName="checked"
+              initialValue={false}
+            >
+              <Switch
+                checkedChildren="HOT"
+                unCheckedChildren="NORMAL"
+                style={{
+                  backgroundColor: form.getFieldValue("hot") ? "#ff4d4f" : "",
+                }} // Tùy chọn: Đổi màu đỏ khi bật
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Form.Item label="Miêu tả">
+          <ReactQuill
+            theme="snow"
+            value={description}
+            onChange={setDescription}
+            style={{ height: "300px", marginBottom: "50px" }}
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+export default UpdateJob;
+import { Col, Form, Input, Modal, notification, Row, Select } from "antd";
+import { createPermissionAPI } from "../../../services/api.service";
+import { useTranslation } from "react-i18next";
+
+const CreatePermission = (props) => {
+  const { t } = useTranslation();
+  const { isOpenCreate, setIsOpenCreate, fetchPermissions } = props;
+  const [form] = Form.useForm();
+  const onFinish = async (values) => {
+    const data = {
+      name: values.name,
+      apiPath: values.apiPath,
+      method: values.method,
+      module: values.module,
+    };
+    const res = await createPermissionAPI(data);
+    if (res.data) {
+      notification.success({
+        title: "Create Permission Success!",
+        description: "Tạo Mới Permission Thành Công!",
+      });
+      setIsOpenCreate(false);
+      fetchPermissions();
+      form.resetFields();
+    } else {
+      notification.error({
+        message: "Error Create Permission!",
+        description: "Lỗi Tạo Mới Permission",
+      });
+    }
+  };
+  const handleCancel = () => {
+    setIsOpenCreate(false);
+    form.resetFields();
+  };
+  return (
+    <Modal
+      title="Tạo mới Job"
+      open={isOpenCreate}
+      onCancel={handleCancel}
+      width={1000}
+      onOk={() => form.submit()}
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Tên Permission"
+              name="name"
+              rules={[{ required: true }]}
+            >
+              <Input placeholder="Nhập tên permisison" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Method"
+              name="method"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Chọn method"
+                options={[
+                  { label: "GET", value: "GET" },
+                  { label: "POST", value: "POST" },
+                  { label: "PUT", value: "PUT" },
+                  { label: "DELETE", value: "DELETE" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="API Path"
+              name="apiPath"
+              rules={[{ required: true }]}
+            >
+              <Input style={{ width: "100%" }} placeholder="Nhập API Path" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Module"
+              name="module"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Thuộc Module"
+                options={[
+                  { label: "USERS", value: "USERS" },
+                  { label: "JOBS", value: "JOBS" },
+                  { label: "COMPANIES", value: "COMPANIES" },
+                  { label: "PERMISSIONS", value: "PERMISSIONS" },
+                  { label: "SKILLS", value: "SKILLS" },
+                  { label: "RESUMES", value: "RESUMES" },
+                  { label: "FILES", value: "FILES" },
+                  { label: "ROLES", value: "ROLES" },
+                  { label: "SUBSCRIBERS", value: "SUBSCRIBER" },
+                  { label: "DASHBOARDS", value: "DASHBOARDS" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  );
+};
+export default CreatePermission;
+import { Col, Form, Input, Modal, notification, Row, Select } from "antd";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { callPutPermissionAPI } from "../../../services/api.service";
+
+const UpdatePermisison = (props) => {
+  const { t } = useTranslation();
+  const {
+    isOpenUpdate,
+    setIsOpenUpdate,
+    dataPermissionUpdate,
+    fetchPermissions,
+  } = props;
+  const [form] = Form.useForm();
+
+  // Reset và set lại dữ liệu mỗi khi dataPermissionUpdate thay đổi
+  useEffect(() => {
+    if (dataPermissionUpdate && isOpenUpdate) {
+      form.setFieldsValue({
+        name: dataPermissionUpdate.name,
+        method: dataPermissionUpdate.method,
+        apiPath: dataPermissionUpdate.apiPath,
+        module: dataPermissionUpdate.module,
+      });
+    }
+  }, [dataPermissionUpdate, isOpenUpdate, form]);
+
+  const onFinish = async (values) => {
+    const data = {
+      id: dataPermissionUpdate?.id, // Đảm bảo lấy đúng ID
+      ...values,
+    };
+    const res = await callPutPermissionAPI(data);
+    if (res.data) {
+      notification.success({
+        message: "Cập nhật thành công",
+        description: "Thông tin Permission đã được thay đổi.",
+      });
+      handleCancel(); // Dùng hàm cancel chung để reset form
+      fetchPermissions({});
+    } else {
+      notification.error({
+        message: "Lỗi cập nhật",
+        description: res.message || "Vui lòng kiểm tra lại dữ liệu",
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setIsOpenUpdate(false);
+    form.resetFields(); // Quan trọng: Reset để lần mở sau không bị dính data cũ của record trước
+  };
+
+  return (
+    <Modal
+      title="Cập nhật Permission" // Sửa lại tiêu đề cho đúng
+      open={isOpenUpdate}
+      onCancel={handleCancel}
+      width={800}
+      onOk={() => form.submit()}
+      okText="Cập nhật"
+      cancelText="Hủy"
+      forceRender // Ép Ant Design render form ngay cả khi modal chưa mở để tránh mất data
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Tên Permission"
+              name="name"
+              rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+            >
+              <Input placeholder="Nhập tên permisison" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Method"
+              name="method"
+              rules={[{ required: true, message: "Vui lòng chọn method!" }]}
+            >
+              <Select
+                placeholder="Chọn method"
+                options={[
+                  { label: "GET", value: "GET" },
+                  { label: "POST", value: "POST" },
+                  { label: "PUT", value: "PUT" },
+                  { label: "DELETE", value: "DELETE" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="API Path"
+              name="apiPath"
+              rules={[{ required: true, message: "Vui lòng nhập API Path!" }]}
+            >
+              <Input placeholder="Nhập API Path" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Module"
+              name="module"
+              rules={[{ required: true, message: "Vui lòng chọn Module!" }]}
+            >
+              <Select
+                placeholder="Thuộc Module"
+                options={[
+                  { label: "USERS", value: "USERS" },
+                  { label: "JOBS", value: "JOBS" },
+                  { label: "SKILLS", value: "SKILLS" },
+                  { label: "COMPANIES", value: "COMPANIES" },
+                  { label: "PERMISSIONS", value: "PERMISSIONS" },
+                  { label: "RESUMES", value: "RESUMES" },
+                  { label: "FILES", value: "FILES" },
+                  { label: "ROLES", value: "ROLES" },
+                  { label: "SUBSCRIBERS", value: "SUBSCRIBER" },
+                  { label: "DASHBOARDS", value: "DASHBOARDS" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  );
+};
+
+export default UpdatePermisison;
+import {
+  Descriptions,
+  Modal,
+  Select,
+  Tag,
+  Button,
+  notification,
+  Divider,
+  Badge,
+  Typography,
+  Space,
+} from "antd";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  callDownloadFileAPI,
+  callPutResume,
+} from "../../../services/api.service";
+import {
+  FilePdfOutlined,
+  MailOutlined,
+  InfoCircleOutlined,
+  HistoryOutlined,
+  GlobalOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+const { Text } = Typography;
+
+const UpdateResume = (props) => {
+  const { t } = useTranslation();
+  const { setIsOpenResume, isOpenResume, dataResume, fetchResumes } = props;
+  const [status, setStatus] = useState(dataResume?.status);
+
+  useEffect(() => {
+    setStatus(dataResume?.status);
+  }, [dataResume]);
+
+  const handleUpdateStatus = async () => {
+    const data = { id: dataResume?.id, status: status };
+    const res = await callPutResume(data);
+    if (res.data) {
+      notification.success({ message: "Cập Nhật Thành Công!" });
+      setIsOpenResume(false);
+      fetchResumes();
+    } else {
+      notification.error({
+        message: "Cập Nhật Thất Bại",
+        description: res.message || "Có lỗi xảy ra",
+      });
+    }
+  };
+
+  const statusOptions = [
+    { value: "PENDING", label: <Badge status="warning" text="PENDING" /> },
+    {
+      value: "REVIEWING",
+      label: <Badge status="processing" text="REVIEWING" />,
+    },
+    { value: "APPROVED", label: <Badge status="success" text="APPROVED" /> },
+    { value: "REJECTED", label: <Badge status="error" text="REJECTED" /> },
+  ];
+
+  return (
+    <Modal
+      title={
+        <Space>
+          <InfoCircleOutlined style={{ color: "#1890ff" }} />
+          <span>CHI TIẾT HỒ SƠ ỨNG TUYỂN</span>
+        </Space>
+      }
+      open={isOpenResume}
+      onCancel={() => setIsOpenResume(false)}
+      onOk={handleUpdateStatus}
+      okText="Lưu thay đổi"
+      cancelText="Đóng"
+      width={700}
+      centered
+    >
+      <Divider orientation="left" plain>
+        <Text type="secondary">Thông tin ứng viên</Text>
+      </Divider>
+
+      <Descriptions bordered column={2} size="small">
+        <Descriptions.Item
+          label={
+            <>
+              <MailOutlined /> Email
+            </>
+          }
+          span={1}
+        >
+          <Text strong copyable>
+            {dataResume?.email}
+          </Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Vị trí ứng tuyển" span={1}>
+          <Text style={{ color: "green" }} strong>
+            {dataResume?.job?.name}
+          </Text>
+        </Descriptions.Item>
+        <Descriptions.Item
+          label={
+            <>
+              <GlobalOutlined /> Công ty
+            </>
+          }
+          span={2}
+        >
+          {dataResume?.companyName || "N/A"}
+        </Descriptions.Item>
+      </Descriptions>
+
+      <Divider orientation="left" plain>
+        <Text type="secondary">Tệp đính kèm & Trạng thái</Text>
+      </Divider>
+
+      <Descriptions bordered column={2} size="small">
+        <Descriptions.Item label="Hồ sơ CV" span={1}>
+          {dataResume?.url ? (
+            <Button
+              type="dashed"
+              icon={<FilePdfOutlined />}
+              href={`http://localhost:8080/api/v1/files?fileName=${dataResume.url}&folder=resume`}
+              target="_blank"
+              size="small"
+              danger
+            >
+              Xem tệp PDF
+            </Button>
+          ) : (
+            <Text type="secondary" italic>
+              Chưa có file
+            </Text>
+          )}
+        </Descriptions.Item>
+
+        <Descriptions.Item label="Xử lý hồ sơ" span={1}>
+          <Select
+            value={status}
+            style={{ width: "100%" }}
+            onChange={(val) => setStatus(val)}
+            options={statusOptions}
+          />
+        </Descriptions.Item>
+      </Descriptions>
+
+      <Divider orientation="left" plain>
+        <Text type="secondary">
+          <HistoryOutlined /> Nhật ký hệ thống
+        </Text>
+      </Divider>
+
+      <div
+        style={{
+          padding: "0 12px",
+          color: "#8c8c8c",
+          fontSize: "13px",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <span>
+          Ngày tạo:{" "}
+          <b>
+            {dataResume?.createdAt
+              ? dayjs(dataResume.createdAt).format("DD/MM/YYYY HH:mm:ss")
+              : "N/A"}
+          </b>
+        </span>
+        <span>
+          Cập nhật cuối:{" "}
+          <b>
+            {dataResume?.updatedAt
+              ? dayjs(dataResume.updatedAt).format("DD/MM/YYYY HH:mm:ss")
+              : "N/A"}
+          </b>
+        </span>
+      </div>
+    </Modal>
+  );
+};
+
+export default UpdateResume;
+import React, { useState } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Row,
+  Col,
+  Switch,
+  Collapse,
+  Card,
+  Tag,
+  notification,
+} from "antd";
+import { useTranslation } from "react-i18next";
+import { createRoleAPI } from "../../../services/api.service";
+
+const { Panel } = Collapse;
+
+const CreateRole = (props) => {
+  const { t } = useTranslation();
+  const { isOpenCreate, setIsOpenCreate, permissionData, fetchRoles } = props;
+  const [form] = Form.useForm();
+
+  const groupPermissions = (data = []) => {
+    const result = [];
+    data.forEach((item) => {
+      const exists = result.find((x) => x.module === item.module);
+      if (exists) {
+        exists.permissions.push(item);
+      } else {
+        result.push({
+          module: item.module,
+          permissions: [item],
+        });
+      }
+    });
+    return result;
+  };
+
+  const groupedData = groupPermissions(permissionData);
+  const handleSwitchAll = (checked, module) => {
+    const current = form.getFieldValue("permissions") || {};
+    const updated = { ...current };
+    const moduleData = groupedData.find((m) => m.module === module);
+    moduleData?.permissions.forEach((p) => {
+      updated[p.id] = checked;
+    });
+    updated[module] = checked;
+    form.setFieldsValue({ permissions: updated });
+  };
+
+  const handleSingle = (checked, id, module) => {
+    const current = form.getFieldValue("permissions") || {};
+    const updated = { ...current, [id]: checked };
+    const moduleData = groupedData.find((m) => m.module === module);
+    const allChecked = moduleData.permissions.every((p) => updated[p.id]);
+    updated[module] = allChecked;
+    form.setFieldsValue({ permissions: updated });
+  };
+
+  const onFinish = async (values) => {
+    const selected = Object.keys(values.permissions || {})
+      .filter((k) => values.permissions[k] === true && !isNaN(k))
+      .map((id) => ({ id: Number(id) }));
+    console.log({
+      ...values,
+      permissions: [1, 2, 3],
+    });
+    const data = {
+      ...values,
+      permissions: selected,
+    };
+    console.log(">>> check data", data);
+    const res = await createRoleAPI(data);
+    if (res.data) {
+      notification.success({
+        title: "Create a Role Success!",
+        description: "Tạo mới Role thành công!",
+      });
+      setIsOpenCreate(false);
+      form.resetFields();
+      fetchRoles();
+    } else {
+      notification.error({
+        message: "Error Create Role",
+        description: JSON.stringify(res.message),
+      });
+    }
+  };
+
+  return (
+    <Modal
+      title="Tạo mới Role"
+      open={isOpenCreate}
+      onOk={() => form.submit()}
+      onCancel={() => setIsOpenCreate(false)}
+      width={800}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{ isActive: true }}
+      >
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="Tên Role"
+              rules={[{ required: true }]}
+            >
+              <Input placeholder="Nhập name" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item name="active" label="Trạng thái" valuePropName="checked">
+              <Switch checkedChildren="ACTIVE" unCheckedChildren="INACTIVE" />
+            </Form.Item>
+          </Col>
+
+          <Col span={24}>
+            <Form.Item
+              name="description"
+              label="Miêu tả"
+              rules={[{ required: true }]}
+            >
+              <Input.TextArea placeholder="Nhập miêu tả role" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <p>
+          <b>Quyền hạn</b>
+        </p>
+
+        <Collapse>
+          {groupedData?.map((item) => (
+            <Panel
+              header={item.module}
+              key={item.module}
+              extra={
+                <Form.Item
+                  name={["permissions", item.module]}
+                  valuePropName="checked"
+                  noStyle
+                >
+                  <Switch
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(v) => handleSwitchAll(v, item.module)}
+                  />
+                </Form.Item>
+              }
+            >
+              <Row gutter={[16, 16]}>
+                {item.permissions?.map((p) => (
+                  <Col span={12} key={p.id}>
+                    <Card size="small">
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          <div>{p.name}</div>
+                          <div style={{ fontSize: 12 }}>
+                            <Tag
+                              color={
+                                p.method === "POST"
+                                  ? "green"
+                                  : p.method === "PUT"
+                                    ? "orange"
+                                    : p.method === "DELETE"
+                                      ? "red"
+                                      : "blue"
+                              }
+                            >
+                              {p.method}
+                            </Tag>
+                            {p.apiPath}
+                          </div>
+                        </div>
+
+                        <Form.Item
+                          name={["permissions", p.id]}
+                          valuePropName="checked"
+                          noStyle
+                        >
+                          <Switch
+                            onChange={(v) => handleSingle(v, p.id, item.module)}
+                          />
+                        </Form.Item>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Panel>
+          ))}
+        </Collapse>
+      </Form>
+    </Modal>
+  );
+};
+
+export default CreateRole;
+import React, { useEffect } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Row,
+  Col,
+  Switch,
+  Collapse,
+  Tag,
+  notification,
+  Card,
+} from "antd";
+import { useTranslation } from "react-i18next";
+import { callPutRoleAPI } from "../../../services/api.service";
+
+const { Panel } = Collapse;
+
+const UpdateRole = (props) => {
+  const { t } = useTranslation();
+  const {
+    isOpenUpdate,
+    setIsOpenUpdate,
+    permissionData,
+    fetchRoles,
+    dataUpdateRole,
+  } = props;
+  const [form] = Form.useForm();
+
+  // 1. Group permission theo module (Giữ nguyên logic của bạn)
+  const groupPermissions = (data = []) => {
+    const result = [];
+    data.forEach((item) => {
+      const exists = result.find((x) => x.module === item.module);
+      if (exists) {
+        exists.permissions.push(item);
+      } else {
+        result.push({
+          module: item.module,
+          permissions: [item],
+        });
+      }
+    });
+    return result;
+  };
+
+  const groupedData = groupPermissions(permissionData);
+
+  // 2. Fix quan trọng: Set dữ liệu vào Form
+  useEffect(() => {
+    if (dataUpdateRole && isOpenUpdate && permissionData?.length) {
+      const permissionsObj = {};
+
+      // Bước A: Đánh dấu các permission lẻ mà Role đang có
+      dataUpdateRole.permissions?.forEach((p) => {
+        permissionsObj[p.id] = true;
+      });
+
+      // Bước B: Kiểm tra xem Module đó có được "Check All" hay không
+      groupedData.forEach((m) => {
+        const allChecked = m.permissions.every((p) =>
+          dataUpdateRole.permissions?.some((rp) => rp.id === p.id),
+        );
+        permissionsObj[m.module] = allChecked;
+      });
+
+      // Bước C: Đổ dữ liệu vào form
+      form.setFieldsValue({
+        name: dataUpdateRole.name,
+        active: dataUpdateRole.active,
+        description: dataUpdateRole.description,
+        permissions: permissionsObj, // Đối tượng phẳng { id: true, MODULE: true }
+      });
+    }
+  }, [dataUpdateRole, isOpenUpdate, permissionData, form]);
+
+  const handleCancel = () => {
+    setIsOpenUpdate(false);
+    form.resetFields();
+  };
+
+  // 3. Xử lý bật/tắt toàn bộ module
+  const handleSwitchAll = (checked, moduleName) => {
+    const currentPermissions = form.getFieldValue("permissions") || {};
+    const updatedPermissions = { ...currentPermissions };
+
+    const moduleInfo = groupedData.find((m) => m.module === moduleName);
+    if (moduleInfo) {
+      moduleInfo.permissions.forEach((p) => {
+        updatedPermissions[p.id] = checked;
+      });
+      updatedPermissions[moduleName] = checked;
+    }
+
+    form.setFieldsValue({ permissions: updatedPermissions });
+  };
+
+  // 4. Xử lý bật/tắt từng permission lẻ
+  const handleSingle = (checked, id, moduleName) => {
+    const currentPermissions = form.getFieldValue("permissions") || {};
+    const updatedPermissions = { ...currentPermissions, [id]: checked };
+
+    const moduleInfo = groupedData.find((m) => m.module === moduleName);
+    if (moduleInfo) {
+      const isAllChecked = moduleInfo.permissions.every(
+        (p) => updatedPermissions[p.id],
+      );
+      updatedPermissions[moduleName] = isAllChecked;
+    }
+
+    form.setFieldsValue({ permissions: updatedPermissions });
+  };
+
+  const onFinish = async (values) => {
+    // Chuyển đổi từ Object { id: true } sang Array [{ id: 1 }] để gửi lên server
+    const selectedPermissions = Object.keys(values.permissions || {})
+      .filter((key) => !isNaN(key) && values.permissions[key] === true)
+      .map((id) => ({ id: Number(id) }));
+
+    const data = {
+      id: dataUpdateRole.id,
+      name: values.name,
+      active: values.active,
+      description: values.description,
+      permissions: selectedPermissions,
+    };
+
+    const res = await callPutRoleAPI(data);
+    if (res.data) {
+      notification.success({ message: "Cập nhật Role thành công!" });
+      handleCancel();
+      fetchRoles();
+    } else {
+      notification.error({
+        message: "Lỗi cập nhật",
+        description: res.message || "Vui lòng thử lại",
+      });
+    }
+  };
+
+  return (
+    <Modal
+      title="Cập nhật Role"
+      open={isOpenUpdate}
+      onOk={() => form.submit()}
+      onCancel={handleCancel}
+      width={800}
+      forceRender // Cực kỳ quan trọng để không mất data khi mở modal
+      okText="Cập nhật"
+      cancelText="Hủy"
+    >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="Tên Role"
+              rules={[{ required: true }]}
+            >
+              <Input placeholder="Nhập name" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="active" label="Trạng thái" valuePropName="checked">
+              <Switch checkedChildren="ACTIVE" unCheckedChildren="INACTIVE" />
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item
+              name="description"
+              label="Miêu tả"
+              rules={[{ required: true }]}
+            >
+              <Input.TextArea placeholder="Nhập miêu tả role" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <p>
+          <b>Quyền hạn</b>
+        </p>
+        <Collapse ghost>
+          {groupedData?.map((item) => (
+            <Panel
+              header={<span style={{ fontWeight: 500 }}>{item.module}</span>}
+              key={item.module}
+              extra={
+                <Form.Item
+                  name={["permissions", item.module]}
+                  valuePropName="checked"
+                  noStyle
+                >
+                  <Switch
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(v) => handleSwitchAll(v, item.module)}
+                  />
+                </Form.Item>
+              }
+            >
+              <Row gutter={[16, 16]}>
+                {item.permissions?.map((p) => (
+                  <Col span={12} key={p.id}>
+                    <Card size="small" hoverable>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{p.name}</div>
+                          <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+                            <Tag
+                              color={
+                                p.method === "POST"
+                                  ? "green"
+                                  : p.method === "PUT"
+                                    ? "orange"
+                                    : p.method === "DELETE"
+                                      ? "red"
+                                      : "blue"
+                              }
+                            >
+                              {p.method}
+                            </Tag>
+                            {p.apiPath}
+                          </div>
+                        </div>
+                        <Form.Item
+                          name={["permissions", p.id]}
+                          valuePropName="checked"
+                          noStyle
+                        >
+                          <Switch
+                            onChange={(v) => handleSingle(v, p.id, item.module)}
+                          />
+                        </Form.Item>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Panel>
+          ))}
+        </Collapse>
+      </Form>
+    </Modal>
+  );
+};
+
+export default UpdateRole;
+import { Col, Form, Input, Modal, notification, Row, Switch } from "antd";
+import { createSkill } from "../../../services/api.service";
+import { useTranslation } from "react-i18next";
+
+const CreateSkill = (props) => {
+  const { t } = useTranslation();
+  const {
+    isOpenCreate,
+    setIsOpenCreate,
+    fetchSkills,
+    isOpenUpdate,
+    setIsOpenUpdate,
+    dataSkillUpdate,
+  } = props;
+  const [form] = Form.useForm();
+  const onFinish = async (values) => {
+    const res = await createSkill({
+      name: values.name,
+    });
+    console.log(">>> check name", values.name);
+    if (res.data) {
+      notification.success({
+        title: "Create a Skill Success!",
+        description: "Tạo mới skill thành công",
+      });
+      fetchSkills();
+      setIsOpenCreate(false);
+      form.resetFields();
+    } else {
+      notification.error({
+        message: "Error Create Skill",
+        description: JSON.stringify(res.message),
+      });
+    }
+  };
+  return (
+    <Modal
+      title="Tạo mới Skill"
+      open={isOpenCreate}
+      onOk={() => form.submit()}
+      onCancel={() => setIsOpenCreate(false)}
+      width={800}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{ isActive: true }}
+      >
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="Tên Skill"
+              rules={[{ required: true }]}
+            >
+              <Input placeholder="Nhập name" />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  );
+};
+export default CreateSkill;
+import { Col, Form, Input, Modal, notification, Row, Switch } from "antd";
+import { callPutSkill, createSkill } from "../../../services/api.service";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
+const UpdateSkill = (props) => {
+  const { t } = useTranslation();
+  const { fetchSkills, isOpenUpdate, setIsOpenUpdate, dataSkillUpdate } = props;
+  const [form] = Form.useForm();
+  useEffect(() => {
+    if (dataSkillUpdate && isOpenUpdate) {
+      form.setFieldsValue(dataSkillUpdate);
+    }
+  }, [dataSkillUpdate, isOpenUpdate, form]);
+  const onFinish = async (values) => {
+    const res = await callPutSkill({
+      id: dataSkillUpdate.id,
+      ...dataSkillUpdate,
+      name: values.name,
+    });
+    if (res.data) {
+      notification.success({
+        title: "Update a Skill Success!",
+        description: "Cập nhật skill thành công",
+      });
+      fetchSkills();
+      setIsOpenUpdate(false);
+      form.resetFields();
+    } else {
+      notification.error({
+        message: "Error Update Skill",
+        description: JSON.stringify(res.message),
+      });
+    }
+  };
+
+  return (
+    <Modal
+      title="Cập nhật Skill"
+      open={isOpenUpdate}
+      onOk={() => form.submit()}
+      onCancel={() => setIsOpenUpdate(false)}
+      width={800}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{ isActive: true }}
+      >
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="Tên Skill"
+              rules={[{ required: true }]}
+            >
+              <Input placeholder="Nhập name" />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  );
+};
+export default UpdateSkill;
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Row,
+  Col,
+  notification,
+  message,
+} from "antd";
+import { useTranslation } from "react-i18next";
+import { callPutUser } from "../../../services/api.service";
+import { useEffect, useEffectEvent } from "react";
+const UpdateUser = (props) => {
+  const { t } = useTranslation();
+  const {
+    isOpenUpdateUser,
+    setIsOpenUpdateUser,
+    roleData,
+    companyData,
+    updateUserData,
+    fetchUsers,
+  } = props;
+  const [form] = Form.useForm();
+  useEffect(() => {
+    if (updateUserData && isOpenUpdateUser) {
+      form.setFieldsValue(updateUserData);
+    }
+  }, [updateUserData, isOpenUpdateUser, form]);
+  const handleOk = () => {};
+  const handleCancel = () => {
+    setIsOpenUpdateUser(false);
+    form.resetFields();
+  };
+  const onFinish = async (values) => {
+    let data = {
+      id: updateUserData.id,
+      address: values.address,
+      name: values.name,
+      age: values.age,
+      role: values.role?.id ? { id: values.role.id } : null,
+      company: values.company?.id ? { id: values.company.id } : null,
+      gender: values.gender,
+    };
+    if (values.password && values.password.trim() !== "") {
+      data.password = values.password;
+    }
+    const res = await callPutUser(data);
+    if (res.data) {
+      notification.success({
+        message: "Update User Success!",
+        description: "Cập nhật người dùng thành công!",
+      });
+      setIsOpenUpdateUser(false);
+      form.resetFields();
+      fetchUsers();
+    } else {
+      notification.error({
+        message: "Update User Failed",
+        description: JSON.stringify(res.message),
+      });
+    }
+  };
+
+  return (
+    <Modal
+      title="CẬP NHẬT USER"
+      open={isOpenUpdateUser}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      width={800}
+      footer={[
+        <Button type="primary" onClick={() => form.submit()} key="submit">
+          Update
+        </Button>,
+        <Button onClick={handleCancel} key="back">
+          Cancel
+        </Button>,
+      ]}
+    >
+      <Form
+        form={form}
+        layout="vertical" // Đưa Label lên trên Input
+        style={{ marginTop: "20px" }}
+        onFinish={onFinish}
+        initialValues={updateUserData}
+      >
+        {/* Hàng 1: Email và Password */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: false, message: "Vui lòng nhập email!" }]}
+            >
+              <Input placeholder="Nhập email" disabled />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: false, message: "Vui lòng nhập password!" }]}
+            >
+              <Input.Password placeholder="Nhập password để thay đổi, còn không thì thôi" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Hàng 2: Tên hiển thị, Tuổi, Giới tính, Vai trò */}
+        <Row gutter={16}>
+          <Col span={6}>
+            <Form.Item
+              label="Tên hiển thị"
+              name="name"
+              rules={[{ required: false }]}
+            >
+              <Input placeholder="Nhập tên hiển thị" />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Tuổi" name="age" rules={[{ required: false }]}>
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Nhập nhập tuổi"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              label="Giới Tính"
+              name="gender"
+              rules={[{ required: false }]}
+            >
+              <Select
+                placeholder="Chọn giới tính"
+                options={[
+                  { label: "Nam", value: "MALE" },
+                  { label: "Nữ", value: "FEMALE" },
+                  { label: "Khác", value: "OTHER" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Vai trò" name={["role", "id"]}>
+              <Select
+                options={roleData}
+                fieldNames={{ label: "name", value: "id" }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Hàng 3: Thuộc công ty và Địa chỉ */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Thuộc Công Ty"
+              name={["company", "id"]}
+              rules={[{ required: false }]}
+            >
+              <Select
+                allowClear
+                placeholder="Chọn công ty"
+                options={companyData}
+                fieldNames={{ label: "name", value: "id" }}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Địa chỉ"
+              name="address"
+              rules={[{ required: false }]}
+            >
+              <Input placeholder="Nhập địa chỉ" />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Modal>
+  );
+};
+export default UpdateUser;
+import { Avatar, Badge, Descriptions, Drawer, Divider, Tag } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+
+const UserDetail = (props) => {
+  const { t } = useTranslation();
+  const { dataUserDetail, isOpenDetailUser, setIsOpenDetailUser } = props;
+
+  // Hàm helper để hiển thị Tag cho Role hoặc Gender
+  const renderGender = (gender) => {
+    if (gender === "MALE") return <Tag color="blue">Nam</Tag>;
+    if (gender === "FEMALE") return <Tag color="magenta">Nữ</Tag>;
+    return <Tag color="orange">Khác</Tag>;
+  };
+
+  return (
+    <Drawer
+      title="CHI TIẾT NGƯỜI DÙNG"
+      placement="right"
+      width={500} // Tăng chiều rộng một chút cho thoáng
+      onClose={() => setIsOpenDetailUser(false)}
+      open={isOpenDetailUser}
+    >
+      {/* Header: Ảnh đại diện và Tên */}
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <Avatar
+          size={100}
+          icon={<UserOutlined />}
+          style={{ backgroundColor: "#1677ff" }}
+        />
+        <h2 style={{ marginTop: "10px" }}>{dataUserDetail?.name || "N/A"}</h2>
+        <Tag color="cyan">{dataUserDetail?.role?.name || "USER"}</Tag>
+      </div>
+
+      <Divider orientation="left">Thông tin cá nhân</Divider>
+
+      <Descriptions column={1} bordered size="small">
+        <Descriptions.Item label="ID">{dataUserDetail?.id}</Descriptions.Item>
+        <Descriptions.Item label="Email">
+          {dataUserDetail?.email}
+        </Descriptions.Item>
+        <Descriptions.Item label="Tuổi">
+          {dataUserDetail?.age}
+        </Descriptions.Item>
+        <Descriptions.Item label="Giới tính">
+          {renderGender(dataUserDetail?.gender)}
+        </Descriptions.Item>
+        <Descriptions.Item label="Địa chỉ">
+          {dataUserDetail?.address || "N/A"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Ngày tạo">
+          {dataUserDetail?.createdAt
+            ? new Date(dataUserDetail.createdAt).toLocaleString()
+            : "N/A"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Người tạo">
+          {dataUserDetail?.createdBy || "Hệ thống"}
+        </Descriptions.Item>
+      </Descriptions>
+
+      <Divider orientation="left">Thông tin công việc</Divider>
+
+      <Descriptions column={1} bordered size="small">
+        <Descriptions.Item label="Công ty">
+          {dataUserDetail?.company?.name || "Chưa cập nhật"}
+        </Descriptions.Item>
+      </Descriptions>
+    </Drawer>
+  );
+};
+
+export default UserDetail;

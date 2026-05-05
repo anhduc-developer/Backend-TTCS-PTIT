@@ -29,11 +29,13 @@ dependencies {
 		implementation("com.turkraft.springfilter:jpa:3.1.7")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 	implementation("org.springframework.boot:spring-boot-starter-mail")
+	implementation("org.apache.pdfbox:pdfbox:2.0.30")
+	implementation("org.apache.poi:poi-ooxml:5.2.5")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.mysql:mysql-connector-j")
+	// runtimeOnly ("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
-
 
 }
 

@@ -15,9 +15,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import vn.hunter.job.domain.request.RestResponse;
+import vn.hunter.job.util.I18nErrorFormatter;
 
 @RestControllerAdvice
 public class GlobalException {
+
+    private final I18nErrorFormatter i18nErrorFormatter;
+
+    public GlobalException(I18nErrorFormatter i18nErrorFormatter) {
+        this.i18nErrorFormatter = i18nErrorFormatter;
+    }
+
     // handle All Exception
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex) {
@@ -57,7 +65,21 @@ public class GlobalException {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setError(ex.getBody().getDetail());
-        List<String> errors = fieldErrors.stream().map(f -> f.getDefaultMessage()).collect(Collectors.toList());
+
+        // Use i18n formatter to resolve error messages
+        List<String> errors = fieldErrors.stream()
+                .map(f -> {
+                    // Get the default message (may contain i18n key in {key} format)
+                    String message = f.getDefaultMessage();
+                    // Try to resolve it using i18n formatter
+                    if (message != null && message.startsWith("{") && message.endsWith("}")) {
+                        String key = message.substring(1, message.length() - 1);
+                        return i18nErrorFormatter.getMessage(key, message);
+                    }
+                    return message;
+                })
+                .collect(Collectors.toList());
+
         res.setMessage(errors.size() > 1 ? errors : errors.get(0));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }

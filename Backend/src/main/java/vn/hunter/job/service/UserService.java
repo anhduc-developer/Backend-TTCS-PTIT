@@ -153,7 +153,7 @@ public class UserService {
         res.setUpdatedAt(user.getUpdatedAt());
         res.setCreatedAt(user.getCreatedAt());
         res.setGender(user.getGender());
-
+        res.setAddress(user.getAddress());
         if (user.getCompany() != null) {
             ResUserDTO.UserCompany com = new ResUserDTO.UserCompany();
             com.setId(user.getCompany().getId());
