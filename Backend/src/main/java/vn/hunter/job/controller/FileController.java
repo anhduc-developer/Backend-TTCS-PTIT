@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,21 +19,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import vn.hunter.job.domain.CVData;
+import vn.hunter.job.domain.CvUpload;
+import vn.hunter.job.service.CvUploadService;
+import vn.hunter.job.domain.response.ResJobRecommendationDTO;
+import vn.hunter.job.domain.response.AiResumeAnalysisDTO;
 import vn.hunter.job.domain.response.File.ResUploadFileDTO;
+import vn.hunter.job.service.AiRecommendationClient;
 import vn.hunter.job.service.CvParserService;
 import vn.hunter.job.service.ExcelService;
 import vn.hunter.job.service.FileService;
+import vn.hunter.job.service.JobRecommendationService;
 import vn.hunter.job.util.annotation.ApiMessage;
 import vn.hunter.job.util.errors.StorageException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import org.springframework.core.io.ByteArrayResource;
 
 @RestController
@@ -43,6 +44,16 @@ public class FileController {
 
     @Autowired
     private ExcelService excelService;
+
+    @Autowired
+    private CvUploadService cvUploadService;
+
+    @Autowired
+    private JobRecommendationService jobRecommendationService;
+
+    @Autowired
+    private AiRecommendationClient aiRecommendationClient;
+
     @Value("${duck.upload-file.base-uri}")
     private String baseURI;
     private final FileService fileService;
@@ -97,6 +108,65 @@ public class FileController {
                 .contentLength(fileLength)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+    }
+
+    @PostMapping("/files/cv-recommend-jobs")
+    @ApiMessage("Upload CV and recommend jobs by skill")
+    public ResponseEntity<ResJobRecommendationDTO> uploadCvAndRecommendJobs(
+            @RequestParam("file") MultipartFile file) throws IOException, StorageException, URISyntaxException {
+
+        if (file == null || file.isEmpty()) {
+            throw new StorageException("File is empty. Please upload a file");
+        }
+
+        String fileName = file.getOriginalFilename();
+        String extension = fileName != null && fileName.contains(".")
+                ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase()
+                : "";
+
+        List<String> allowedExtensions = Arrays.asList("pdf", "doc", "docx");
+        if (!allowedExtensions.contains(extension)) {
+            throw new StorageException("Invalid file extension. only allows " + allowedExtensions.toString());
+        }
+
+        // Store the file
+        this.fileService.createDirectory(baseURI + "cv");
+        String uploadFile = this.fileService.store(file, "cv");
+
+        // Analyze resume using the external AI microservice
+        AiResumeAnalysisDTO analysis = aiRecommendationClient.analyzeResume(file);
+
+        // Save CV upload with extracted skills
+        CvUpload cvUpload = cvUploadService.saveCvUpload(fileName, uploadFile, analysis.getSkills());
+
+        ResJobRecommendationDTO response = new ResJobRecommendationDTO();
+        response.setCvId(cvUpload.getId());
+        response.setFileName(cvUpload.getFileName());
+        response.setSkills(analysis.getSkills());
+        response.setJobs(jobRecommendationService.recommendJobsBySkills(analysis.getSkills(), 10));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/files/cv/{cvId}")
+    @ApiMessage("Get CV recommendations by ID")
+    public ResponseEntity<ResJobRecommendationDTO> getCvRecommendations(@PathVariable("cvId") Long cvId)
+            throws StorageException {
+        Optional<CvUpload> cvUploadOpt = cvUploadService.getCvUploadById(cvId);
+        if (cvUploadOpt.isEmpty()) {
+            throw new StorageException("CV not found");
+        }
+
+        CvUpload cvUpload = cvUploadOpt.get();
+        List<String> skills = cvUploadService.getSkillsFromCvUpload(cvUpload);
+
+        ResJobRecommendationDTO response = new ResJobRecommendationDTO();
+        response.setCvId(cvId);
+        response.setFileName(cvUpload.getFileName());
+        response.setSkills(skills);
+        response.setJobs(jobRecommendationService.recommendJobsBySkills(skills, 10));
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/files/cv-to-excel")

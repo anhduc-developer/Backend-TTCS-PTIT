@@ -35,14 +35,36 @@ public class CvParserService {
             cv.location = "TP.HCM";
         }
         String[] skills = {
-                "Java", "Spring Boot", "React", "TypeScript",
-                "MySQL", "PostgreSQL", "MongoDB", "Python", "Typescript", "SQL Server", "C++", "C", "Nodejs", "Express",
-                "NestJs", "NextJs"
+                "Java", "Spring Boot", "React", "TypeScript", "JavaScript",
+                "MySQL", "PostgreSQL", "MongoDB", "Python", "SQL Server", 
+                "C\\+\\+", "C#", "C", "Nodejs", "Express", "NestJs", "NextJs",
+                "Angular", "Vue", "AWS", "Docker", "Kubernetes", "PHP",
+                "Ruby", "Go", "Golang", "Rust", "Swift", "Kotlin", ".NET"
         };
 
         for (String skill : skills) {
-            if (text.toLowerCase().contains(skill.toLowerCase())) {
-                cv.skills.add(skill);
+            String regex;
+            if (skill.equals("C\\+\\+")) {
+                regex = "(?i)\\bC\\+\\+";
+            } else if (skill.equals("C#")) {
+                regex = "(?i)\\bC#";
+            } else if (skill.equals(".NET")) {
+                regex = "(?i)\\.NET\\b";
+            } else if (skill.equalsIgnoreCase("Nodejs")) {
+                regex = "(?i)\\b(Nodejs|Node\\.js|Node js)\\b";
+            } else if (skill.equalsIgnoreCase("React")) {
+                regex = "(?i)\\b(React|Reactjs|React\\.js)\\b";
+            } else if (skill.equalsIgnoreCase("Vue")) {
+                regex = "(?i)\\b(Vue|Vuejs|Vue\\.js)\\b";
+            } else {
+                regex = "(?i)\\b" + Pattern.quote(skill) + "\\b";
+            }
+
+            if (Pattern.compile(regex).matcher(text).find()) {
+                String normalizedSkill = skill.replace("\\+\\+", "++");
+                if (!cv.skills.contains(normalizedSkill)) {
+                    cv.skills.add(normalizedSkill);
+                }
             }
         }
 

@@ -23,6 +23,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
@@ -31,6 +32,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-mail")
 	implementation("org.apache.pdfbox:pdfbox:2.0.30")
 	implementation("org.apache.poi:poi-ooxml:5.2.5")
+	implementation("org.apache.poi:poi-scratchpad:5.2.5")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	// runtimeOnly ("org.postgresql:postgresql")
@@ -38,7 +40,6 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 }
-
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

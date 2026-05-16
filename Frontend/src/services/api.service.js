@@ -59,6 +59,18 @@ const handleUploadFile = (file, folder) => {
     return axios.post(URL_BACKEND, bodyFormData);
 };
 
+const uploadCvRecommendJobs = (file) => {
+    const URL_BACKEND = `/api/v1/files/cv-recommend-jobs`;
+    const bodyFormData = new FormData();
+    bodyFormData.append("file", file);
+    return axios.post(URL_BACKEND, bodyFormData);
+};
+
+const getCvRecommendations = (cvId) => {
+    const URL_BACKEND = `/api/v1/files/cv/${cvId}`;
+    return axios.get(URL_BACKEND);
+};
+
 const callPutCompany = (data) => {
     const URL_BACKEND = `/api/v1/companies`;
     return axios.put(URL_BACKEND, data);
@@ -247,6 +259,8 @@ export {
     callPutSkill,
     callLogin,
     callGetAccount,
-    callResgister
-    , callUpdateUserInfo
+    callResgister,
+    callUpdateUserInfo,
+    uploadCvRecommendJobs,
+    getCvRecommendations
 };

@@ -27,11 +27,6 @@ public class EmailController {
     // @Scheduled(cron = "*/10 * * * * *")
     @Transactional
     public String sendSimpleEmail() {
-        // this.emailService.sendSimpleEmail();
-        // this.emailService.sendEmailSync("tomorrowduc@gmail.com", "test send email",
-        // "<h1> <b> Hoang bat luc</b> </h1>", false, true);
-        // this.emailService.sendEmailFromTemplateSync("tomorrowduc@gmail.com", "test
-        // send email", "job");
         this.subscriberService.sendSubscribersEmailJobs();
         return "ok";
     }

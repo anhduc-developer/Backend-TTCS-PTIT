@@ -352,7 +352,7 @@
     "incorrectPassword": "Old password is incorrect",
     "notUpdated": "Not updated",
     "email": "Email",
-    "age_years": "{age} years old",
+    "age_years": "{{age}} years old",
     "address": "Address",
     "history": "Application History",
     "job": "Job",

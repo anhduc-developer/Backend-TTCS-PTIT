@@ -30,6 +30,7 @@ import {
   CalendarOutlined,
   EditOutlined,
   GlobalOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import { AuthContext } from "../../context/auth.context";
 import {
@@ -38,7 +39,7 @@ import {
   callChangePassword,
 } from "../../../services/api.service";
 import dayjs from "dayjs";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
@@ -330,7 +331,7 @@ const Profile = () => {
                         </div>
                       </Space>
                     </Col>
-                    <Col span={24}>
+                    <Col span={12}>
                       <Space direction="vertical" size={0}>
                         <Text type="secondary">
                           <HomeOutlined /> {t("user.userAddress")}
@@ -339,6 +340,74 @@ const Profile = () => {
                           {user?.address || t("profile.notUpdated")}
                         </Text>
                       </Space>
+                    </Col>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          padding: "14px 18px",
+                          borderRadius: "16px",
+                          background:
+                            "linear-gradient(135deg, #f8fafc, #eef2ff)",
+                          border: "1px solid #e5e7eb",
+                          transition: "0.3s",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <a
+                          href="https://portfolio-pearl-nu-13.vercel.app/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            textDecoration: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "14px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: "12px",
+                              background:
+                                "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#fff",
+                              fontSize: 18,
+                              boxShadow: "0 4px 10px rgba(99,102,241,0.35)",
+                            }}
+                          >
+                            <BookOutlined />
+                          </div>
+
+                          <Space direction="vertical" size={0}>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Portfolio
+                            </Text>
+
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 16,
+                                color: "#111827",
+                              }}
+                            >
+                              My Projects & Works
+                            </Text>
+                          </Space>
+                        </a>
+                      </div>
                     </Col>
                   </Row>
                 </div>

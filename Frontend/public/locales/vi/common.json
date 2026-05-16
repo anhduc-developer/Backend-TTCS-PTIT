@@ -349,7 +349,7 @@
     "incorrectPassword": "Mật khẩu cũ không đúng",
     "notUpdated": "Chưa cập nhật",
     "email": "Email",
-    "age_years": "{age} tuổi",
+    "age_years": "{{age}} tuổi",
     "address": "Địa chỉ",
     "history": "Lịch sử ứng tuyển",
     "job": "Vị trí",

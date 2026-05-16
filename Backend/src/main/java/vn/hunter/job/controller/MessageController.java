@@ -27,7 +27,7 @@ public class MessageController {
      * @return localized message string
      */
     @GetMapping("/{key}")
-    public ResponseEntity<?> getMessage(@PathVariable String key) {
+    public ResponseEntity<?> getMessage(@PathVariable("key") String key) {
         try {
             String message = messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
             return ResponseEntity.ok(Map.of("key", key, "message", message));

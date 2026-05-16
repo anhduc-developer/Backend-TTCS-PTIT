@@ -43,8 +43,8 @@ public class FileService {
         // create unique filename
         String finalName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
 
-        URI uri = new URI(baseURI + folder + "/" + finalName);
-        Path path = Paths.get(uri);
+        URI base = new URI(baseURI);
+        Path path = Paths.get(base).resolve(folder).resolve(finalName);
         try (InputStream inputStream = file.getInputStream()) {
             Files.copy(inputStream, path,
                     StandardCopyOption.REPLACE_EXISTING);
@@ -53,8 +53,8 @@ public class FileService {
     }
 
     public long getFileLength(String fileName, String folder) throws URISyntaxException {
-        URI uri = new URI(baseURI + folder + "/" + fileName);
-        Path path = Paths.get(uri);
+        URI base = new URI(baseURI);
+        Path path = Paths.get(base).resolve(folder).resolve(fileName);
         File tmpDir = new File(path.toString());
         if (!tmpDir.exists() || tmpDir.isDirectory()) {
             return 0;
@@ -64,8 +64,8 @@ public class FileService {
 
     public InputStreamResource getResource(String fileName, String folder)
             throws URISyntaxException, FileNotFoundException {
-        URI uri = new URI(baseURI + folder + "/" + fileName);
-        Path path = Paths.get(uri);
+        URI base = new URI(baseURI);
+        Path path = Paths.get(base).resolve(folder).resolve(fileName);
         File file = new File(path.toString());
         return new InputStreamResource(new FileInputStream(file));
     }

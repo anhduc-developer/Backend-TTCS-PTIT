@@ -29,21 +29,23 @@ const Job = () => {
     }
   };
   const fetchCompanies = async () => {
-    const res = await fetchAllCompanies({ page, size });
+    const res = await fetchAllCompanies({ page: 1, size: 1000 });
     if (res.data) {
       setCompanyData(res.data.result);
     }
   };
   const fetchSkills = async () => {
-    const res = await fetchAllSkills({ page, size });
+    const res = await fetchAllSkills({ page: 1, size: 1000 });
     if (res.data) {
       setSkillData(res.data.result);
     }
   };
   useEffect(() => {
     fetchCompanies();
-    fetchJobs();
     fetchSkills();
+  }, []);
+  useEffect(() => {
+    fetchJobs();
   }, [page, size]);
   return (
     <ViewJob
